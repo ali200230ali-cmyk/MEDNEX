@@ -14,199 +14,98 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-
-  // أسماء بديلة شائعة
-  const synonyms = {
-    "paracetamol": "acetaminophen",
-    "باراسيتامول": "acetaminophen",
-    "panadol": "acetaminophen",
-    "بنادول": "acetaminophen",
-    "salbutamol": "albuterol",
-    "سالبوتامول": "albuterol",
-    "adrenaline": "epinephrine",
-    "ادرينالين": "epinephrine",
-    "metamizole": "dipyrone",
-    "ميتاميزول": "dipyrone"
-  };
-
-
-  async function searchFDA(term) {
-
-    const fields = [
-      "openfda.brand_name",
-      "openfda.generic_name",
-      "openfda.substance_name"
-    ];
-
-    const allResults = [];
-
-    for (const field of fields) {
-
-      const url =
-        "https://api.fda.gov/drug/label.json" +
-        "?search=" +
-        encodeURIComponent(field + ":" + term) +
-        "&limit=10";
-
-      try {
-
-        const response = await fetch(url);
-
-        if (response.ok) {
-
-          const data = await response.json();
-
-          if (data.results) {
-            allResults.push(...data.results);
-          }
-
-        }
-
-      } catch (error) {
-
-        console.log("FDA error:", error);
-
-      }
-    }
-
-
-    // إزالة النتائج المكررة
-    const uniqueResults = [];
-    const seen = new Set();
-
-    for (const drug of allResults) {
-
-      const id =
-        drug.id ||
-        drug.set_id ||
-        JSON.stringify(drug.openfda);
-
-      if (!seen.has(id)) {
-
-        seen.add(id);
-        uniqueResults.push(drug);
-
-      }
-
-    }
-
-    return uniqueResults;
-  }
-
-
   async function searchMedicine() {
 
-    const originalQuery =
-      searchInput.value.trim();
+    const query = searchInput.value.trim();
 
-    if (!originalQuery) {
-
-      results.innerHTML =
-        "<p>اكتب اسم الدواء أولًا.</p>";
-
+    if (!query) {
+      results.innerHTML = "<p>اكتب اسم الدواء أولًا.</p>";
       return;
     }
 
+    results.innerHTML = "<p>🔎 جاري البحث في FDA...</p>";
 
-    results.innerHTML = `
-      <div class="medicine-card">
-        <p>🔎 جاري البحث عن الدواء...</p>
-      </div>
-    `;
+    try {
 
+      const synonyms = {
+        "paracetamol": "acetaminophen",
+        "بانادول": "panadol",
+        "باراسيتامول": "acetaminophen",
+        "acetaminophen": "acetaminophen",
+        "panadol": "panadol"
+      };
 
-    const normalizedQuery =
-      synonyms[originalQuery.toLowerCase()] ||
-      originalQuery;
+      const searchTerm =
+        synonyms[query.toLowerCase()] || query;
 
+      const fdaUrl =
+        "https://api.fda.gov/drug/label.json" +
+        "?search=" +
+        encodeURIComponent(
+          'openfda.brand_name:"' +
+          searchTerm +
+          '" OR openfda.generic_name:"' +
+          searchTerm +
+          '"'
+        ) +
+        "&limit=5";
 
-    medicines =
-      await searchFDA(normalizedQuery);
+      const response = await fetch(fdaUrl);
 
+      if (!response.ok) {
+        throw new Error("FDA request failed");
+      }
 
-    if (medicines.length === 0) {
+      const data = await response.json();
 
-      results.innerHTML = `
+      medicines = data.results || [];
 
-        <div class="medicine-card">
+      if (medicines.length === 0) {
 
-          <h3>🔍 لم نجد الدواء</h3>
+        results.innerHTML = `
+          <div class="medicine-card">
+            <h3>💊 لم نجد الدواء</h3>
+            <p>لم نجد نتيجة مطابقة في قاعدة بيانات FDA.</p>
+          </div>
+        `;
 
-          <p>
-            لم نجد نتيجة مطابقة لـ
-            <strong>${originalQuery}</strong>
-            في قاعدة البيانات الحالية.
-          </p>
+        return;
+      }
 
-          <p>
-            جرّب الاسم التجاري أو المادة الفعالة
-            باللغة الإنجليزية.
-          </p>
-
-        </div>
-
-      `;
-
-      return;
-    }
-
-
-    results.innerHTML = medicines.map(
-      function (drug, index) {
+      results.innerHTML = medicines.map(function (drug, index) {
 
         const brand =
           drug.openfda?.brand_name?.[0] ||
-          "اسم غير متوفر";
+          "غير متوفر";
 
         const generic =
           drug.openfda?.generic_name?.[0] ||
-          drug.openfda?.substance_name?.[0] ||
           "غير متوفر";
 
         const manufacturer =
           drug.openfda?.manufacturer_name?.[0] ||
           "غير متوفر";
 
-
         return `
-
           <div class="medicine-card">
 
-            <h3>
-              💊 ${brand}
-            </h3>
+            <h3>💊 ${brand}</h3>
 
-            <div class="info-grid">
+            <p>
+              <strong>المادة الفعالة:</strong>
+              ${generic}
+            </p>
 
-              <div class="info-item">
-
-                <strong>
-                  🧪 المادة الفعالة
-                </strong>
-
-                ${generic}
-
-              </div>
-
-
-              <div class="info-item">
-
-                <strong>
-                  🏭 الشركة
-                </strong>
-
-                ${manufacturer}
-
-              </div>
-
-            </div>
-
+            <p>
+              <strong>الشركة:</strong>
+              ${manufacturer}
+            </p>
 
             <button
               onclick="showMedicineDetails(${index})"
               style="
                 margin-top:15px;
-                padding:13px 22px;
+                padding:12px 20px;
                 border:none;
                 border-radius:10px;
                 background:#087f8c;
@@ -216,68 +115,72 @@ document.addEventListener("DOMContentLoaded", function () {
                 cursor:pointer;
               "
             >
-              📋 عرض تفاصيل الدواء
+              📋 عرض التفاصيل
             </button>
 
           </div>
-
         `;
 
-      }
-    ).join("");
+      }).join("");
 
+    } catch (error) {
+
+      console.error(error);
+
+      results.innerHTML = `
+        <div class="medicine-card">
+
+          <h3>⚠️ حدث خطأ</h3>
+
+          <p>
+            تعذر الاتصال بمصدر المعلومات حاليًا.
+          </p>
+
+        </div>
+      `;
+    }
   }
 
 
-  // صفحة تفاصيل الدواء
   window.showMedicineDetails = function (index) {
 
     const drug = medicines[index];
 
     if (!drug) return;
 
-
     const brand =
       drug.openfda?.brand_name?.[0] ||
       "غير متوفر";
 
-
     const generic =
       drug.openfda?.generic_name?.[0] ||
-      drug.openfda?.substance_name?.[0] ||
       "غير متوفر";
-
 
     const manufacturer =
       drug.openfda?.manufacturer_name?.[0] ||
       "غير متوفر";
 
-
-    const indications =
+    const purpose =
+      drug.purpose?.[0] ||
       drug.indications_and_usage?.[0] ||
-      "غير مذكورة في السجل المتاح";
+      "غير مذكور في السجل المتاح";
 
+    const warnings =
+      drug.warnings?.[0] ||
+      drug.boxed_warning?.[0] ||
+      "غير مذكور في السجل المتاح";
 
     const adverse =
       drug.adverse_reactions?.[0] ||
       "غير مذكورة في السجل الدوائي المتاح";
 
-
-    const warnings =
-      drug.warnings?.[0] ||
-      drug.boxed_warning?.[0] ||
-      "غير مذكورة في السجل المتاح";
-
-
     const contraindications =
       drug.contraindications?.[0] ||
       "غير مذكورة في السجل المتاح";
 
-
     const dosage =
       drug.dosage_and_administration?.[0] ||
       "غير مذكور في السجل المتاح";
-
 
     const interactions =
       drug.drug_interactions?.[0] ||
@@ -288,103 +191,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
       <div class="medicine-card">
 
-        <h3>
-          💊 ${brand}
-        </h3>
-
+        <h3>💊 ${brand}</h3>
 
         <div class="info-grid">
 
           <div class="info-item">
-
-            <strong>
-              🧪 المادة الفعالة
-            </strong>
-
+            <strong>🧪 المادة الفعالة</strong>
             ${generic}
-
           </div>
 
-
           <div class="info-item">
-
-            <strong>
-              🏭 الشركة
-            </strong>
-
+            <strong>🏭 الشركة</strong>
             ${manufacturer}
-
           </div>
 
         </div>
 
-
         <hr>
 
+        <h4>🩺 الاستخدامات</h4>
+        <p>${purpose}</p>
 
-        <h4>
-          🩺 الاستخدامات
-        </h4>
+        <h4>⚕️ الآثار الجانبية</h4>
+        <p>${adverse}</p>
 
-        <p>
-          ${indications}
-        </p>
+        <h4>⚠️ التحذيرات</h4>
+        <p>${warnings}</p>
 
+        <h4>🚫 موانع الاستعمال</h4>
+        <p>${contraindications}</p>
 
-        <h4>
-          ⚕️ الآثار الجانبية
-        </h4>
+        <h4>💉 الجرعات وطريقة الاستخدام</h4>
+        <p>${dosage}</p>
 
-        <p>
-          ${adverse}
-        </p>
-
-
-        <h4>
-          ⚠️ التحذيرات
-        </h4>
-
-        <p>
-          ${warnings}
-        </p>
-
-
-        <h4>
-          🚫 موانع الاستعمال
-        </h4>
-
-        <p>
-          ${contraindications}
-        </p>
-
-
-        <h4>
-          💉 الجرعات وطريقة الاستخدام
-        </h4>
-
-        <p>
-          ${dosage}
-        </p>
-
-
-        <h4>
-          🔄 التداخلات الدوائية
-        </h4>
-
-        <p>
-          ${interactions}
-        </p>
-
+        <h4>🔄 التداخلات الدوائية</h4>
+        <p>${interactions}</p>
 
         <div class="source-box">
 
-          <strong>
-            📚 المصدر
-          </strong>
+          <strong>📚 المصدر الرسمي</strong>
 
           <p>
-            U.S. Food and Drug Administration
-            — openFDA Drug Labeling
+            U.S. Food and Drug Administration —
+            openFDA Drug Labeling
           </p>
 
           <a
@@ -392,14 +241,13 @@ document.addEventListener("DOMContentLoaded", function () {
             target="_blank"
             rel="noopener noreferrer"
           >
-            🔗 فتح المصدر الرسمي
+            🔗 فتح المصدر
           </a>
 
         </div>
 
-
         <button
-          onclick="searchMedicineAgain()"
+          onclick="location.reload()"
           style="
             margin-top:20px;
             padding:12px 20px;
@@ -417,21 +265,6 @@ document.addEventListener("DOMContentLoaded", function () {
       </div>
 
     `;
-
-  };
-
-
-  // العودة للبحث
-  window.searchMedicineAgain = function () {
-
-    results.innerHTML = `
-      <div class="medicine-card">
-        <p>
-          اكتب اسم الدواء للبحث.
-        </p>
-      </div>
-    `;
-
   };
 
 });
