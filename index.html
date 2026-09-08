@@ -3,52 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MEDNEX - منصة الرعاية الصحية</title>
+
+  <title>MEDNEX</title>
 
   <style>
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
     }
 
     body {
-      background: #f5f8fa;
-      color: #102a43;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f8fb;
+      color: #17202a;
     }
 
     header {
       background: #0b7285;
       color: white;
-      padding: 28px 20px;
+      padding: 25px 20px;
       text-align: center;
     }
 
     header h1 {
-      font-size: 34px;
+      margin: 0;
+      font-size: 36px;
     }
 
     header p {
-      margin-top: 8px;
+      margin: 8px 0 0;
+      font-size: 17px;
     }
 
     .container {
       max-width: 900px;
-      margin: auto;
-      padding: 25px 18px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .welcome {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .welcome h2 {
+      font-size: 28px;
     }
 
     .search-box {
       background: white;
       padding: 25px;
-      border-radius: 18px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-      margin-bottom: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
 
     .search-box h2 {
-      margin-bottom: 15px;
+      margin-top: 0;
     }
 
     .search-row {
@@ -58,21 +68,24 @@
 
     #medicineSearch {
       flex: 1;
-      padding: 14px;
-      border: 1px solid #ccd6dd;
+      padding: 15px;
+      border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 16px;
-      outline: none;
     }
 
     #searchButton {
+      padding: 15px 25px;
       border: none;
       border-radius: 10px;
-      padding: 0 22px;
       background: #0b7285;
       color: white;
-      cursor: pointer;
       font-size: 16px;
+      cursor: pointer;
+    }
+
+    #searchButton:hover {
+      background: #095c6b;
     }
 
     #results {
@@ -80,64 +93,24 @@
     }
 
     .medicine-card {
-      background: #f8fbfc;
-      border: 1px solid #e1e8ed;
-      border-radius: 14px;
-      padding: 18px;
-      margin-top: 12px;
+      background: #ffffff;
+      border-right: 5px solid #0b7285;
+      padding: 20px;
+      margin-top: 15px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.07);
     }
 
     .medicine-card h3 {
+      margin-top: 0;
       color: #0b7285;
-      margin-bottom: 10px;
-    }
-
-    .medicine-card p {
-      margin: 7px 0;
-    }
-
-    .welcome {
-      background: white;
-      border-radius: 18px;
-      padding: 25px;
-      text-align: center;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-    }
-
-    .services {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 18px;
-      margin-top: 25px;
-    }
-
-    .service {
-      background: white;
-      padding: 25px;
-      border-radius: 16px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-    }
-
-    .service h3 {
-      margin-bottom: 10px;
-    }
-
-    .service button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 10px;
-      background: #0b7285;
-      color: white;
-      cursor: pointer;
     }
 
     footer {
       text-align: center;
-      margin-top: 40px;
+      margin-top: 50px;
       padding: 20px;
-      color: #627d98;
+      color: #777;
     }
 
     @media (max-width: 600px) {
@@ -146,7 +119,7 @@
       }
 
       #searchButton {
-        padding: 13px;
+        width: 100%;
       }
     }
   </style>
@@ -159,21 +132,21 @@
     <p>منصة ذكية للرعاية الصحية</p>
   </header>
 
-  <main class="container">
+  <div class="container">
 
-    <section class="welcome">
-      <h2>مرحباً بك في MEDNEX</h2>
-      <p>منصتك الرقمية للوصول إلى الخدمات الصحية والصيدلانية بسهولة.</p>
-    </section>
+    <div class="welcome">
+      <h2>أهلًا بك في MEDNEX 💊</h2>
+      <p>ابحث عن الدواء واحصل على معلوماته بسرعة.</p>
+    </div>
 
-    <section class="search-box">
+    <div class="search-box">
       <h2>💊 البحث عن دواء</h2>
 
       <div class="search-row">
         <input
           type="text"
           id="medicineSearch"
-          placeholder="اكتب اسم الدواء..."
+          placeholder="اكتب اسم الدواء مثل Panadol"
         >
 
         <button id="searchButton">
@@ -182,34 +155,12 @@
       </div>
 
       <div id="results"></div>
-    </section>
+    </div>
 
-    <section class="services">
-
-      <div class="service">
-        <h3>🏥 الصيدليات</h3>
-        <p>العثور على الصيدليات والخدمات القريبة.</p>
-        <button onclick="comingSoon('دليل الصيدليات')">استكشف</button>
-      </div>
-
-      <div class="service">
-        <h3>📋 الوصفة الطبية</h3>
-        <p>إدارة وصفاتك الطبية بطريقة رقمية.</p>
-        <button onclick="comingSoon('الوصفات الطبية')">فتح الوصفات</button>
-      </div>
-
-      <div class="service">
-        <h3>🤖 المساعد الذكي</h3>
-        <p>مساعد صحي مدعوم بالذكاء الاصطناعي.</p>
-        <button onclick="comingSoon('المساعد الصحي الذكي')">ابدأ</button>
-      </div>
-
-    </section>
-
-  </main>
+  </div>
 
   <footer>
-    © 2026 MEDNEX — Smart Healthcare Platform
+    MEDNEX © 2026
   </footer>
 
   <script src="app.js"></script>
