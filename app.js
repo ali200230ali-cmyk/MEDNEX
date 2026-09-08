@@ -14,6 +14,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+
+  // أسماء بديلة شائعة
+  const synonyms = {
+    "paracetamol": "acetaminophen",
+    "باراسيتامول": "acetaminophen",
+    "panadol": "acetaminophen",
+    "بنادول": "acetaminophen",
+    "salbutamol": "albuterol",
+    "سالبوتامول": "albuterol",
+    "adrenaline": "epinephrine",
+    "ادرينالين": "epinephrine",
+    "metamizole": "dipyrone",
+    "ميتاميزول": "dipyrone"
+  };
+
+
   async function searchFDA(term) {
 
     const fields = [
@@ -47,13 +63,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
       } catch (error) {
-        console.log("FDA search error:", error);
+
+        console.log("FDA error:", error);
+
       }
     }
 
-    // إزالة النتائج المكررة
-    const unique = [];
 
+    // إزالة النتائج المكررة
+    const uniqueResults = [];
     const seen = new Set();
 
     for (const drug of allResults) {
@@ -66,12 +84,13 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!seen.has(id)) {
 
         seen.add(id);
-        unique.push(drug);
+        uniqueResults.push(drug);
 
       }
+
     }
 
-    return unique;
+    return uniqueResults;
   }
 
 
@@ -88,29 +107,21 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    results.innerHTML =
-      "<p>🔎 جاري البحث في قاعدة FDA...</p>";
 
-    /*
-      أسماء شائعة لها أسماء دولية مختلفة
-    */
+    results.innerHTML = `
+      <div class="medicine-card">
+        <p>🔎 جاري البحث عن الدواء...</p>
+      </div>
+    `;
 
-    const synonyms = {
 
-      paracetamol: "acetaminophen",
-      panadol: "acetaminophen",
-      salbutamol: "albuterol",
-      adrenaline: "epinephrine",
-      acetaminophen: "acetaminophen"
-
-    };
-
-    const query =
+    const normalizedQuery =
       synonyms[originalQuery.toLowerCase()] ||
       originalQuery;
 
 
-    medicines = await searchFDA(query);
+    medicines =
+      await searchFDA(normalizedQuery);
 
 
     if (medicines.length === 0) {
@@ -177,6 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
               </div>
 
+
               <div class="info-item">
 
                 <strong>
@@ -188,6 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
               </div>
 
             </div>
+
 
             <button
               onclick="showMedicineDetails(${index})"
@@ -216,6 +229,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 
+  // صفحة تفاصيل الدواء
   window.showMedicineDetails = function (index) {
 
     const drug = medicines[index];
@@ -227,51 +241,49 @@ document.addEventListener("DOMContentLoaded", function () {
       drug.openfda?.brand_name?.[0] ||
       "غير متوفر";
 
+
     const generic =
       drug.openfda?.generic_name?.[0] ||
       drug.openfda?.substance_name?.[0] ||
       "غير متوفر";
 
+
     const manufacturer =
       drug.openfda?.manufacturer_name?.[0] ||
       "غير متوفر";
+
 
     const indications =
       drug.indications_and_usage?.[0] ||
       "غير مذكورة في السجل المتاح";
 
+
     const adverse =
       drug.adverse_reactions?.[0] ||
       "غير مذكورة في السجل الدوائي المتاح";
+
 
     const warnings =
       drug.warnings?.[0] ||
       drug.boxed_warning?.[0] ||
       "غير مذكورة في السجل المتاح";
 
+
     const contraindications =
       drug.contraindications?.[0] ||
       "غير مذكورة في السجل المتاح";
+
 
     const dosage =
       drug.dosage_and_administration?.[0] ||
       "غير مذكور في السجل المتاح";
 
+
     const interactions =
       drug.drug_interactions?.[0] ||
       "غير مذكورة في السجل المتاح";
-console.log("MEDNEX: PubMed integration ready");
-const researchQuery = encodeURIComponent(generic);
-const pubmedUrl =
-  "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi" +
-  "?db=pubmed&term=" + researchQuery +
-  "&retmode=json&retmax=5";
-    const pubmedResponse = await fetch(pubmedUrl);
-const pubmedData = await pubmedResponse.json();
 
-const researchIds =
-  pubmedData?.esearchresult?.idlist || [];
-    console.log("MEDNEX PubMed IDs:", researchIds);
+
     results.innerHTML = `
 
       <div class="medicine-card">
@@ -280,42 +292,95 @@ const researchIds =
           💊 ${brand}
         </h3>
 
+
         <div class="info-grid">
 
           <div class="info-item">
-            <strong>🧪 المادة الفعالة</strong>
+
+            <strong>
+              🧪 المادة الفعالة
+            </strong>
+
             ${generic}
+
           </div>
 
+
           <div class="info-item">
-            <strong>🏭 الشركة</strong>
+
+            <strong>
+              🏭 الشركة
+            </strong>
+
             ${manufacturer}
+
           </div>
+
         </div>
+
 
         <hr>
 
-        <h4>🩺 الاستخدامات</h4>
-        <p>${indications}</p>
 
-        <h4>⚕️ الآثار الجانبية</h4>
-        <p>${adverse}</p>
+        <h4>
+          🩺 الاستخدامات
+        </h4>
 
-        <h4>⚠️ التحذيرات</h4>
-        <p>${warnings}</p>
+        <p>
+          ${indications}
+        </p>
 
-        <h4>🚫 موانع الاستعمال</h4>
-        <p>${contraindications}</p>
 
-        <h4>💉 الجرعات وطريقة الاستخدام</h4>
-        <p>${dosage}</p>
+        <h4>
+          ⚕️ الآثار الجانبية
+        </h4>
 
-        <h4>🔄 التداخلات الدوائية</h4>
-        <p>${interactions}</p>
+        <p>
+          ${adverse}
+        </p>
+
+
+        <h4>
+          ⚠️ التحذيرات
+        </h4>
+
+        <p>
+          ${warnings}
+        </p>
+
+
+        <h4>
+          🚫 موانع الاستعمال
+        </h4>
+
+        <p>
+          ${contraindications}
+        </p>
+
+
+        <h4>
+          💉 الجرعات وطريقة الاستخدام
+        </h4>
+
+        <p>
+          ${dosage}
+        </p>
+
+
+        <h4>
+          🔄 التداخلات الدوائية
+        </h4>
+
+        <p>
+          ${interactions}
+        </p>
+
 
         <div class="source-box">
 
-          <strong>📚 المصدر</strong>
+          <strong>
+            📚 المصدر
+          </strong>
 
           <p>
             U.S. Food and Drug Administration
@@ -331,6 +396,7 @@ const researchIds =
           </a>
 
         </div>
+
 
         <button
           onclick="searchMedicineAgain()"
@@ -355,10 +421,16 @@ const researchIds =
   };
 
 
+  // العودة للبحث
   window.searchMedicineAgain = function () {
 
-    results.innerHTML =
-      "<p>اكتب اسم الدواء للبحث.</p>";
+    results.innerHTML = `
+      <div class="medicine-card">
+        <p>
+          اكتب اسم الدواء للبحث.
+        </p>
+      </div>
+    `;
 
   };
 
