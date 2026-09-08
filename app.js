@@ -1,122 +1,97 @@
-// MEDNEX - Smart Medicine Search
-
 const medicines = [
-    {
-        name: "Panadol",
-        generic: "Paracetamol",
-        form: "Tablets",
-        strength: "500 mg",
-        use: "لتخفيف الألم وخفض الحرارة"
-    },
-    {
-        name: "Paracetamol",
-        generic: "Paracetamol",
-        form: "Tablets",
-        strength: "500 mg",
-        use: "مسكن للألم وخافض للحرارة"
-    },
-    {
-        name: "Amoxicillin",
-        generic: "Amoxicillin",
-        form: "Capsules",
-        strength: "500 mg",
-        use: "مضاد حيوي لبعض الالتهابات البكتيرية"
-    },
-    {
-        name: "Omeprazole",
-        generic: "Omeprazole",
-        form: "Capsules",
-        strength: "20 mg",
-        use: "يستخدم لتقليل إفراز حمض المعدة"
-    },
-    {
-        name: "Pantoprazole",
-        generic: "Pantoprazole",
-        form: "Tablets",
-        strength: "40 mg",
-        use: "يستخدم لعلاج حالات مرتبطة بزيادة حمض المعدة"
-    }
+  {
+    name: "Panadol",
+    generic: "Paracetamol",
+    strength: "500 mg",
+    form: "Tablets",
+    use: "مسكن للألم وخافض للحرارة"
+  },
+  {
+    name: "Paracetamol",
+    generic: "Paracetamol",
+    strength: "500 mg",
+    form: "Tablets",
+    use: "مسكن للألم وخافض للحرارة"
+  },
+  {
+    name: "Amoxicillin",
+    generic: "Amoxicillin",
+    strength: "500 mg",
+    form: "Capsules",
+    use: "مضاد حيوي لبعض الالتهابات البكتيرية"
+  },
+  {
+    name: "Omeprazole",
+    generic: "Omeprazole",
+    strength: "20 mg",
+    form: "Capsules",
+    use: "لتقليل إفراز حمض المعدة"
+  },
+  {
+    name: "Pantoprazole",
+    generic: "Pantoprazole",
+    strength: "40 mg",
+    form: "Tablets",
+    use: "لتقليل إفراز حمض المعدة"
+  }
 ];
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
 
-    const buttons = document.querySelectorAll(".service button");
+  const searchButton = document.getElementById("searchButton");
+  const searchInput = document.getElementById("medicineSearch");
+  const results = document.getElementById("results");
 
-    buttons.forEach((button) => {
+  if (!searchButton || !searchInput || !results) {
+    console.error("MEDNEX: Search elements not found.");
+    return;
+  }
 
-        button.addEventListener("click", () => {
+  searchButton.addEventListener("click", searchMedicine);
 
-            const service =
-                button.parentElement.querySelector("h3").textContent;
+  searchInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      searchMedicine();
+    }
+  });
 
-            if (service.includes("البحث عن دواء")) {
+  function searchMedicine() {
 
-                const name = prompt(
-                    "💊 اكتب اسم الدواء الذي تريد البحث عنه:"
-                );
+    const query = searchInput.value.trim().toLowerCase();
 
-                if (!name) return;
+    if (!query) {
+      results.innerHTML =
+        "<p>اكتب اسم الدواء أولًا.</p>";
+      return;
+    }
 
-                const results = medicines.filter((medicine) =>
-                    medicine.name.toLowerCase().includes(name.toLowerCase()) ||
-                    medicine.generic.toLowerCase().includes(name.toLowerCase())
-                );
-
-                if (results.length === 0) {
-
-                    alert(
-                        "❌ لم نجد الدواء في قاعدة البيانات التجريبية."
-                    );
-
-                    return;
-                }
-
-                let message = "💊 نتائج البحث:\n\n";
-
-                results.forEach((medicine, index) => {
-
-                    message +=
-                        `${index + 1}. ${medicine.name}\n` +
-                        `المادة الفعالة: ${medicine.generic}\n` +
-                        `الشكل: ${medicine.form}\n` +
-                        `التركيز: ${medicine.strength}\n` +
-                        `الاستخدام: ${medicine.use}\n\n`;
-
-                });
-
-                message +=
-                    "⚠️ هذه معلومات أولية وليست وصفة طبية.";
-
-                alert(message);
-            }
-
-            else if (service.includes("الصيدليات")) {
-
-                alert(
-                    "🏥 نظام الصيدليات قيد التطوير.\n\n" +
-                    "قريبًا ستظهر الصيدليات المتوفرة ومواقعها."
-                );
-
-            }
-
-            else if (service.includes("الوصفة")) {
-
-                alert(
-                    "📋 نظام الوصفات الطبية قيد التطوير."
-                );
-
-            }
-
-            else if (service.includes("المساعد")) {
-
-                alert(
-                    "🤖 المساعد الصحي الذكي قيد التطوير."
-                );
-
-            }
-
-        });
-
+    const matches = medicines.filter(function (medicine) {
+      return (
+        medicine.name.toLowerCase().includes(query) ||
+        medicine.generic.toLowerCase().includes(query)
+      );
     });
+
+    if (matches.length === 0) {
+      results.innerHTML =
+        "<p>❌ لم نجد الدواء في قاعدة البيانات التجريبية.</p>";
+      return;
+    }
+
+    results.innerHTML = matches.map(function (medicine) {
+
+      return `
+        <div class="medicine-card">
+          <h3>💊 ${medicine.name}</h3>
+          <p><strong>المادة الفعالة:</strong> ${medicine.generic}</p>
+          <p><strong>التركيز:</strong> ${medicine.strength}</p>
+          <p><strong>الشكل الدوائي:</strong> ${medicine.form}</p>
+          <p><strong>الاستخدام:</strong> ${medicine.use}</p>
+        </div>
+      `;
+
+    }).join("");
+
+  }
 
 });
