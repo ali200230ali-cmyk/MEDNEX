@@ -260,8 +260,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const interactions =
       drug.drug_interactions?.[0] ||
       "غير مذكورة في السجل المتاح";
+console.log("MEDNEX: PubMed integration ready");
+const researchQuery = encodeURIComponent(generic);
+const pubmedUrl =
+  "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi" +
+  "?db=pubmed&term=" + researchQuery +
+  "&retmode=json&retmax=5";
+    const pubmedResponse = await fetch(pubmedUrl);
+const pubmedData = await pubmedResponse.json();
 
-
+const researchIds =
+  pubmedData?.esearchresult?.idlist || [];
+    console.log("MEDNEX PubMed IDs:", researchIds);
     results.innerHTML = `
 
       <div class="medicine-card">
