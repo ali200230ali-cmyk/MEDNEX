@@ -17,7 +17,23 @@ heredocument.addEventListener("DOMContentLoaded", function () {
 
   async function searchMedicine() {
 
-    const query = searchInput.value.trim();
+    const originalQuery = searchInput.value.trim();
+
+if (!originalQuery) {
+  results.innerHTML = "<p>اكتب اسم الدواء أولًا.</p>";
+  return;
+}
+
+const synonyms = {
+  "paracetamol": "acetaminophen",
+  "panadol": "acetaminophen",
+  "salbutamol": "albuterol",
+  "adrenaline": "epinephrine",
+  "metamizole": "dipyrone"
+};
+
+const query =
+  synonyms[originalQuery.toLowerCase()] || originalQuery;
 
     if (!query) {
       results.innerHTML =
