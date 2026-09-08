@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 
-  window.showMedicineDetails = asyncfunction (index) {
+  window.showMedicineDetails = function (index) {
 
     const drug = medicines[index];
 
