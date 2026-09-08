@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const searchInput = document.getElementById("medicineSearch");
   const results = document.getElementById("results");
 
+  let medicines = [];
+
   searchButton.addEventListener("click", searchMedicine);
 
   searchInput.addEventListener("keydown", function (event) {
@@ -26,10 +28,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
 
-      // =========================
-      // 1. FDA DRUG DATABASE
-      // =========================
-
       const fdaUrl =
         "https://api.fda.gov/drug/label.json" +
         "?search=" +
@@ -50,75 +48,13 @@ document.addEventListener("DOMContentLoaded", function () {
         fdaData = await fdaResponse.json();
       }
 
-      // =========================
-      // 2. PUBMED SEARCH
-      // =========================
-
-      const pubmedSearchUrl =
-        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi" +
-        "?db=pubmed" +
-        "&term=" +
-        encodeURIComponent(query) +
-        "&retmode=json" +
-        "&retmax=5";
-
-      const pubmedSearchResponse =
-        await fetch(pubmedSearchUrl);
-
-      const pubmedSearchData =
-        await pubmedSearchResponse.json();
-
-      const articleIds =
-        pubmedSearchData?.esearchresult?.idlist || [];
-
-      let articles = [];
-
-      // =========================
-      // 3. GET PUBMED ARTICLES
-      // =========================
-
-      if (articleIds.length > 0) {
-
-        const summaryUrl =
-          "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi" +
-          "?db=pubmed" +
-          "&id=" +
-          articleIds.join(",") +
-          "&retmode=json";
-
-        const summaryResponse =
-          await fetch(summaryUrl);
-
-        const summaryData =
-          await summaryResponse.json();
-
-        articles = articleIds.map(function (id) {
-
-          const article = summaryData.result?.[id];
-
-          if (!article) {
-            return null;
-          }
-
-          return {
-            id: id,
-            title: article.title || "عنوان غير متوفر",
-            journal: article.fulljournalname || "",
-            date: article.pubdate || ""
-          };
-
-        }).filter(Boolean);
-      }
-
-      // =========================
-      // 4. DISPLAY FDA DATA
-      // =========================
+      medicines = fdaData?.results || [];
 
       let html = "";
 
-      if (fdaData?.results?.length > 0) {
+      if (medicines.length > 0) {
 
-        html += fdaData.results.map(function (drug) {
+        html += medicines.map(function (drug, index) {
 
           const brand =
             drug.openfda?.brand_name?.[0] ||
@@ -130,19 +66,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
           const manufacturer =
             drug.openfda?.manufacturer_name?.[0] ||
-            "غير متوفر";
-
-          const purpose =
-            drug.purpose?.[0] ||
-            drug.indications_and_usage?.[0] ||
-            "غير متوفر";
-
-          const warnings =
-            drug.warnings?.[0] ||
-            "غير متوفر";
-
-          const adverse =
-            drug.adverse_reactions?.[0] ||
             "غير متوفر";
 
           return `
@@ -160,39 +83,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 ${manufacturer}
               </p>
 
-              <hr>
-
-              <h4>🩺 الاستخدامات</h4>
-              <p>${purpose}</p>
-
-              <h4>⚠️ التحذيرات</h4>
-              <p>${warnings}</p>
-
-              <h4>⚕️ الآثار الجانبية</h4>
-              <p>${adverse}</p>
-
-              <div style="
-                margin-top:20px;
-                padding:12px;
-                background:#eef7f9;
-                border-radius:8px;
-              ">
-
-                <strong>📚 مصدر المعلومات</strong>
-
-                <p>
-                  U.S. FDA — openFDA Drug Labeling
-                </p>
-
-                <a
-                  href="https://open.fda.gov/apis/drug/label/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  المصدر الرسمي
-                </a>
-
-              </div>
+              <button
+                onclick="showMedicineDetails(${index})"
+                style="
+                  margin-top:15px;
+                  padding:12px 20px;
+                  border:none;
+                  border-radius:10px;
+                  background:#087f8c;
+                  color:white;
+                  font-size:15px;
+                  font-weight:bold;
+                  cursor:pointer;
+                "
+              >
+                📋 عرض التفاصيل
+              </button>
 
             </div>
           `;
@@ -201,106 +107,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
       } else {
 
-        html += `
+        html = `
           <div class="medicine-card">
-            <h3>💊 معلومات الدواء</h3>
+
+            <h3>💊 لم نجد الدواء</h3>
+
             <p>
-              لم نجد بطاقة دوائية مطابقة في FDA.
-              لكن يمكننا البحث عن الدراسات العلمية.
+              لم نجد نتيجة مطابقة في قاعدة بيانات FDA.
             </p>
+
           </div>
         `;
       }
-
-      // =========================
-      // 5. PUBMED ARTICLES
-      // =========================
-
-      html += `
-        <div class="medicine-card">
-
-          <h3>🔬 الأبحاث العلمية — PubMed</h3>
-
-          <p>
-            أحدث النتائج المتعلقة بـ:
-            <strong>${query}</strong>
-          </p>
-      `;
-
-      if (articles.length > 0) {
-
-        articles.forEach(function (article) {
-
-          html += `
-            <div style="
-              margin-top:15px;
-              padding:12px;
-              border:1px solid #ddd;
-              border-radius:8px;
-            ">
-
-              <h4>
-                ${article.title}
-              </h4>
-
-              <p>
-                📰 ${article.journal}
-              </p>
-
-              <p>
-                📅 ${article.date}
-              </p>
-
-              <a
-                href="https://pubmed.ncbi.nlm.nih.gov/${article.id}/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                🔗 قراءة الدراسة في PubMed
-              </a>
-
-            </div>
-          `;
-
-        });
-
-      } else {
-
-        html += `
-          <p>
-            لم نجد أبحاثًا مطابقة حاليًا.
-          </p>
-        `;
-      }
-
-      html += `
-
-          <div style="
-            margin-top:20px;
-            padding:12px;
-            background:#f4f4f4;
-            border-radius:8px;
-          ">
-
-            <strong>📚 المصدر</strong>
-
-            <p>
-              PubMed — National Library of Medicine /
-              National Institutes of Health
-            </p>
-
-            <a
-              href="https://pubmed.ncbi.nlm.nih.gov/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              فتح PubMed
-            </a>
-
-          </div>
-
-        </div>
-      `;
 
       results.innerHTML = html;
 
@@ -314,17 +132,144 @@ document.addEventListener("DOMContentLoaded", function () {
           <h3>⚠️ حدث خطأ</h3>
 
           <p>
-            تعذر الاتصال بمصادر المعلومات حاليًا.
-          </p>
-
-          <p>
-            حاول مرة أخرى.
+            تعذر الاتصال بمصدر المعلومات حاليًا.
           </p>
 
         </div>
       `;
     }
-
   }
+
+
+  // =================================
+  // عرض تفاصيل الدواء
+  // =================================
+
+  window.showMedicineDetails = function (index) {
+
+    const drug = medicines[index];
+
+    if (!drug) {
+      return;
+    }
+
+    const brand =
+      drug.openfda?.brand_name?.[0] ||
+      "غير متوفر";
+
+    const generic =
+      drug.openfda?.generic_name?.[0] ||
+      "غير متوفر";
+
+    const manufacturer =
+      drug.openfda?.manufacturer_name?.[0] ||
+      "غير متوفر";
+
+    const purpose =
+      drug.purpose?.[0] ||
+      drug.indications_and_usage?.[0] ||
+      "غير مذكور في السجل المتاح";
+
+    const warnings =
+      drug.warnings?.[0] ||
+      drug.boxed_warning?.[0] ||
+      "غير مذكور في السجل المتاح";
+
+    const adverse =
+      drug.adverse_reactions?.[0] ||
+      "غير مذكورة في السجل الدوائي المتاح";
+
+    const contraindications =
+      drug.contraindications?.[0] ||
+      "غير مذكورة في السجل المتاح";
+
+    const dosage =
+      drug.dosage_and_administration?.[0] ||
+      "غير مذكور في السجل المتاح";
+
+    const interactions =
+      drug.drug_interactions?.[0] ||
+      "غير مذكورة في السجل المتاح";
+
+
+    results.innerHTML = `
+
+      <div class="medicine-card">
+
+        <h3>💊 ${brand}</h3>
+
+        <div class="info-grid">
+
+          <div class="info-item">
+            <strong>🧪 المادة الفعالة</strong>
+            ${generic}
+          </div>
+
+          <div class="info-item">
+            <strong>🏭 الشركة</strong>
+            ${manufacturer}
+          </div>
+
+        </div>
+
+        <hr>
+
+        <h4>🩺 الاستخدامات</h4>
+        <p>${purpose}</p>
+
+        <h4>⚕️ الآثار الجانبية</h4>
+        <p>${adverse}</p>
+
+        <h4>⚠️ التحذيرات</h4>
+        <p>${warnings}</p>
+
+        <h4>🚫 موانع الاستعمال</h4>
+        <p>${contraindications}</p>
+
+        <h4>💉 الجرعات وطريقة الاستخدام</h4>
+        <p>${dosage}</p>
+
+        <h4>🔄 التداخلات الدوائية</h4>
+        <p>${interactions}</p>
+
+        <div class="source-box">
+
+          <strong>📚 المصدر الرسمي</strong>
+
+          <p>
+            U.S. Food and Drug Administration —
+            openFDA Drug Labeling
+          </p>
+
+          <a
+            href="https://open.fda.gov/apis/drug/label/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            🔗 فتح المصدر
+          </a>
+
+        </div>
+
+        <button
+          onclick="location.reload()"
+          style="
+            margin-top:20px;
+            padding:12px 20px;
+            border:none;
+            border-radius:10px;
+            background:#063b4c;
+            color:white;
+            font-size:15px;
+            cursor:pointer;
+          "
+        >
+          🔙 العودة للبحث
+        </button>
+
+      </div>
+
+    `;
+  };
 
 });
