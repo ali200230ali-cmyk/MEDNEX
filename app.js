@@ -21,17 +21,33 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    results.innerHTML = "<p>🔎 جاري البحث في قاعدة البيانات الدوائية...</p>";
+    results.innerHTML =
+      "<p>🔎 جاري البحث في قاعدة البيانات الدوائية الرسمية...</p>";
 
     try {
 
+      const encodedQuery = encodeURIComponent(query);
+
+      // البحث في الاسم التجاري والمادة الفعالة
       const url =
         "https://api.fda.gov/drug/label.json" +
-        "?search=openfda.generic_name:" +
-        encodeURIComponent(query) +
-        "&limit=5";
+        "?search=" +
+        "openfda.brand_name:" + encodedQuery +
+        "+openfda.generic_name:" + encodedQuery +
+        "&limit=10";
 
-      const response = await fetch(url);
+      let response = await fetch(url);
+
+      // إذا لم نجد نتيجة، نجرب البحث العام
+      if (!response.ok) {
+
+        const fallbackUrl =
+          "https://api.fda.gov/drug/label.json" +
+          "?search=" + encodedQuery +
+          "&limit=10";
+
+        response = await fetch(fallbackUrl);
+      }
 
       if (!response.ok) {
         throw new Error("Drug not found");
@@ -40,16 +56,27 @@ document.addEventListener("DOMContentLoaded", function () {
       const data = await response.json();
 
       if (!data.results || data.results.length === 0) {
-        results.innerHTML =
-          "<p>❌ لم نجد معلومات لهذا الدواء في المصدر.</p>";
+
+        results.innerHTML = `
+          <div class="medicine-card">
+            <h3>❌ لم نجد الدواء</h3>
+            <p>
+              لم نجد معلومات مطابقة في قاعدة بيانات FDA.
+            </p>
+            <p>
+              جرّب الاسم العلمي بالإنجليزية مثل:
+              <strong>paracetamol</strong>
+            </p>
+          </div>
+        `;
+
         return;
       }
 
       results.innerHTML = data.results.map(function (drug) {
 
-        const name =
+        const brand =
           drug.openfda?.brand_name?.[0] ||
-          drug.openfda?.generic_name?.[0] ||
           "غير متوفر";
 
         const generic =
@@ -76,7 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return `
           <div class="medicine-card">
 
-            <h3>💊 ${name}</h3>
+            <h3>💊 ${brand}</h3>
 
             <p>
               <strong>المادة الفعالة:</strong>
@@ -105,9 +132,12 @@ document.addEventListener("DOMContentLoaded", function () {
               background:#eef7f9;
               border-radius:8px;
             ">
-              <strong>📚 المصدر</strong>
+
+              <strong>📚 مصدر المعلومات</strong>
+
               <p>
-                U.S. FDA — openFDA Drug Labeling
+                U.S. Food and Drug Administration (FDA)
+                — openFDA Drug Labeling
               </p>
 
               <a
@@ -117,6 +147,7 @@ document.addEventListener("DOMContentLoaded", function () {
               >
                 عرض المصدر الرسمي
               </a>
+
             </div>
 
           </div>
@@ -130,13 +161,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
       results.innerHTML = `
         <div class="medicine-card">
-          <h3>⚠️ تعذر الحصول على البيانات</h3>
+
+          <h3>⚠️ حدث خطأ</h3>
+
           <p>
-            لم نتمكن حاليًا من الوصول إلى قاعدة بيانات FDA.
+            تعذر الاتصال بقاعدة البيانات الدوائية حاليًا.
           </p>
+
           <p>
-            حاول البحث باسم المادة الفعالة بالإنجليزية.
+            حاول مرة أخرى أو استخدم الاسم العلمي للدواء
+            باللغة الإنجليزية.
           </p>
+
         </div>
       `;
     }
