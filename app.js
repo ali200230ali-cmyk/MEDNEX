@@ -141,7 +141,118 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+async function loadPubMedResearch(term) {
 
+  const box = document.getElementById("pubmedResearch");
+
+  if (!box) return;
+
+  box.innerHTML = "<p>🔬 جاري البحث في PubMed...</p>";
+
+  try {
+
+    const searchUrl =
+      "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi" +
+      "?db=pubmed" +
+      "&term=" + encodeURIComponent(term) +
+      "&retmode=json" +
+      "&retmax=5";
+
+    const response = await fetch(searchUrl);
+
+    if (!response.ok) {
+      throw new Error("PubMed search failed");
+    }
+
+    const data = await response.json();
+
+    const ids =
+      data?.esearchresult?.idlist || [];
+
+    if (ids.length === 0) {
+
+      box.innerHTML =
+        "<p>لم نجد أبحاثًا مطابقة في PubMed.</p>";
+
+      return;
+    }
+
+    const summaryUrl =
+      "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi" +
+      "?db=pubmed" +
+      "&id=" + ids.join(",") +
+      "&retmode=json";
+
+    const summaryResponse =
+      await fetch(summaryUrl);
+
+    if (!summaryResponse.ok) {
+      throw new Error("PubMed summary failed");
+    }
+
+    const summaryData =
+      await summaryResponse.json();
+
+    const result = summaryData.result || {};
+
+    let html =
+      "<h4>🔬 أبحاث علمية من PubMed</h4>";
+
+    ids.forEach(function (id) {
+
+      const article = result[id];
+
+      if (!article) return;
+
+      const title =
+        article.title ||
+        "عنوان غير متوفر";
+
+      const journal =
+        article.fulljournalname ||
+        article.source ||
+        "مجلة غير معروفة";
+
+      const date =
+        article.pubdate ||
+        "تاريخ غير متوفر";
+
+      html += `
+        <div class="info-item" style="margin-top:12px;">
+
+          <strong>${title}</strong>
+
+          <p>
+            📰 ${journal}
+          </p>
+
+          <p>
+            📅 ${date}
+          </p>
+
+          <a
+            href="https://pubmed.ncbi.nlm.nih.gov/${id}/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            🔗 عرض البحث في PubMed
+          </a>
+
+        </div>
+      `;
+
+    });
+
+    box.innerHTML = html;
+
+  } catch (error) {
+
+    console.error("PubMed error:", error);
+
+    box.innerHTML =
+      "<p>⚠️ تعذر تحميل الأبحاث من PubMed حاليًا.</p>";
+  }
+}
   window.showMedicineDetails = function (index) {
 
     const drug = medicines[index];
@@ -227,7 +338,11 @@ document.addEventListener("DOMContentLoaded", function () {
         <h4>🔄 التداخلات الدوائية</h4>
         <p>${interactions}</p>
 
-        <div class="source-box">
+        <div id="pubmedResearch" class="source-box">
+  <p>🔬 جاري تحميل الأبحاث العلمية...</p>
+</div>
+
+<div class="source-box">
 
           <strong>📚 المصدر الرسمي</strong>
 
