@@ -253,6 +253,7 @@ async function loadPubMedResearch(term) {
       "<p>⚠️ تعذر تحميل الأبحاث من PubMed حاليًا.</p>";
   }
 }
+  
   window.showMedicineDetails = function (index) {
 
     const drug = medicines[index];
@@ -299,6 +300,7 @@ async function loadPubMedResearch(term) {
 
 
     results.innerHTML = `
+loadPubMedResearch(generic);
 
       <div class="medicine-card">
 
@@ -361,7 +363,7 @@ async function loadPubMedResearch(term) {
 
         </div>
 
-        <button
+                <button
           onclick="location.reload()"
           style="
             margin-top:20px;
@@ -380,6 +382,9 @@ async function loadPubMedResearch(term) {
       </div>
 
     `;
+
+    loadPubMedResearch(generic);
+
   };
 
 });
