@@ -142,6 +142,165 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 async function loadPubMedResearch(term) {
+  const container = document.getElementById("pubmedResearch");
+
+  if (!container) return;
+
+  container.innerHTML = `
+    <p>🔬 جاري تحميل الأبحاث العلمية...</p>
+  `;
+
+  try {
+    const searchUrl =
+      "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi" +
+      "?db=pubmed" +
+      "&term=" +
+      encodeURIComponent(term) +
+      "&retmode=json" +
+      "&retmax=5" +
+      "&sort=date";
+
+    const searchResponse = await fetch(searchUrl);
+    const searchData = await searchResponse.json();
+
+    const ids = searchData.esearchresult.idlist || [];
+
+    if (ids.length === 0) {
+      container.innerHTML = `
+        <p>🔬 لم يتم العثور على أبحاث علمية مرتبطة بهذا الدواء.</p>
+      `;
+      return;
+    }
+
+    const fetchUrl =
+      "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi" +
+      "?db=pubmed" +
+      "&id=" +
+      ids.join(",") +
+      "&retmode=xml";
+
+    const response = await fetch(fetchUrl);
+    const xmlText = await response.text();
+
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(xmlText, "text/xml");
+
+    const articles = [...xml.querySelectorAll("PubmedArticle")];
+
+    let html = `
+      <h3>🔬 الأبحاث العلمية</h3>
+      <p>المصدر: PubMed / NCBI</p>
+    `;
+
+    articles.forEach(article => {
+      const pmid =
+        article.querySelector("PMID")?.textContent || "";
+
+      const title =
+        article.querySelector("ArticleTitle")?.textContent ||
+        "بدون عنوان";
+
+      const journal =
+        article.querySelector("Journal Title")?.textContent ||
+        "مجلة غير محددة";
+
+      const year =
+        article.querySelector("PubDate Year")?.textContent ||
+        article.querySelector("PubDate MedlineDate")?.textContent ||
+        "غير محدد";
+
+      const abstractParts = [
+        ...article.querySelectorAll("AbstractText")
+      ];
+
+      const abstract = abstractParts
+        .map(item => item.textContent)
+        .join(" ");
+
+      const publicationTypes = [
+        ...article.querySelectorAll("PublicationType")
+      ].map(item => item.textContent.toLowerCase());
+
+      let studyType = "📄 بحث علمي";
+
+      if (publicationTypes.some(x => x.includes("systematic review"))) {
+        studyType = "📚 مراجعة منهجية";
+      } else if (publicationTypes.some(x => x.includes("meta-analysis"))) {
+        studyType = "📊 تحليل تلوي";
+      } else if (
+        publicationTypes.some(
+          x => x.includes("randomized controlled trial")
+        )
+      ) {
+        studyType = "🩺 تجربة سريرية عشوائية";
+      } else if (
+        publicationTypes.some(x => x.includes("clinical trial"))
+      ) {
+        studyType = "🩺 تجربة سريرية";
+      } else if (
+        publicationTypes.some(x => x.includes("observational study"))
+      ) {
+        studyType = "📊 دراسة رصدية";
+      } else if (
+        publicationTypes.some(x => x.includes("case reports"))
+      ) {
+        studyType = "👤 تقرير حالة";
+      } else if (
+        publicationTypes.some(x => x.includes("animal study"))
+      ) {
+        studyType = "🧪 دراسة حيوانية";
+      } else if (
+        publicationTypes.some(x => x.includes("in vitro"))
+      ) {
+        studyType = "🔬 دراسة مخبرية";
+      }
+
+      const shortAbstract =
+        abstract.length > 500
+          ? abstract.substring(0, 500) + "..."
+          : abstract;
+
+      html += `
+        <div class="research-card">
+          <h4>${title}</h4>
+
+          <p>
+            <strong>نوع الدراسة:</strong>
+            ${studyType}
+          </p>
+
+          <p>
+            <strong>المجلة:</strong>
+            ${journal}
+          </p>
+
+          <p>
+            <strong>السنة:</strong>
+            ${year}
+          </p>
+
+          <p>
+            ${shortAbstract || "لا يوجد ملخص متاح."}
+          </p>
+
+          <a
+            href="https://pubmed.ncbi.nlm.nih.gov/${pmid}/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            🔗 عرض البحث في PubMed
+          </a>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+
+  } catch (error) {
+    console.error("PubMed error:", error);
+
+    container.innerHTML = `
+      <p>⚠️ تع
 
   const box = document.getElementById("pubmedResearch");
 
