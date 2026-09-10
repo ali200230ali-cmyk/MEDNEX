@@ -14,21 +14,51 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  /*
+   * ============================
+   * MEDICINE SYNONYMS
+   * ============================
+   */
 
-  // ==============================
-  // البحث عن الدواء في FDA
-  // ==============================
+  const synonyms = {
+    "paracetamol": "acetaminophen",
+    "باراسيتامول": "acetaminophen",
+    "بانادول": "panadol",
+    "acetaminophen": "acetaminophen",
+    "panadol": "panadol",
+
+    "اوميبرازول": "omeprazole",
+    "أوميبرازول": "omeprazole",
+    "omeprazole": "omeprazole",
+
+    "ايبوبروفين": "ibuprofen",
+    "إيبوبروفين": "ibuprofen",
+    "ibuprofen": "ibuprofen",
+
+    "اموكسيسيلين": "amoxicillin",
+    "أموكسيسيلين": "amoxicillin",
+    "amoxicillin": "amoxicillin"
+  };
+
+
+  /*
+   * ============================
+   * SEARCH FDA
+   * ============================
+   */
 
   async function searchMedicine() {
 
     const searchTerm = searchInput.value.trim();
 
     if (!searchTerm) {
+
       results.innerHTML = `
         <div class="medicine-card">
           <p>اكتب اسم الدواء أولاً.</p>
         </div>
       `;
+
       return;
     }
 
@@ -38,21 +68,8 @@ document.addEventListener("DOMContentLoaded", function () {
       </div>
     `;
 
-
-    const synonyms = {
-      "paracetamol": "acetaminophen",
-      "باراسيتامول": "acetaminophen",
-      "بنادول": "panadol",
-      "بانادول": "panadol",
-      "acetaminophen": "acetaminophen",
-      "panadol": "panadol",
-      "omeprazole": "omeprazole"
-    };
-
-
     const term =
       synonyms[searchTerm.toLowerCase()] || searchTerm;
-
 
     try {
 
@@ -67,74 +84,66 @@ document.addEventListener("DOMContentLoaded", function () {
         ) +
         "&limit=10";
 
-
       const response = await fetch(url);
-
 
       if (!response.ok) {
         throw new Error("FDA API error");
       }
 
-
       const data = await response.json();
 
       medicines = data.results || [];
-
 
       if (medicines.length === 0) {
 
         results.innerHTML = `
           <div class="medicine-card">
-            <p>❌ لم يتم العثور على الدواء.</p>
-            <p>جرّب الاسم العلمي أو التجاري باللغة الإنجليزية.</p>
+            <p>❌ لم يتم العثور على نتائج.</p>
+            <p>جرّب الاسم العلمي أو التجاري للدواء.</p>
           </div>
         `;
 
         return;
       }
 
+      results.innerHTML =
+        medicines.map(function (medicine, index) {
 
-      results.innerHTML = medicines.map(function (medicine, index) {
+          const brand =
+            medicine.openfda?.brand_name?.[0] ||
+            "غير معروف";
 
-        const brand =
-          medicine.openfda?.brand_name?.[0] ||
-          "غير معروف";
+          const generic =
+            medicine.openfda?.generic_name?.[0] ||
+            "غير معروف";
 
+          const manufacturer =
+            medicine.openfda?.manufacturer_name?.[0] ||
+            "غير معروف";
 
-        const generic =
-          medicine.openfda?.generic_name?.[0] ||
-          "غير معروف";
+          return `
+            <div class="medicine-card">
 
+              <h3>${escapeHTML(brand)}</h3>
 
-        const manufacturer =
-          medicine.openfda?.manufacturer_name?.[0] ||
-          "غير معروف";
+              <p>
+                <strong>المادة الفعالة:</strong>
+                ${escapeHTML(generic)}
+              </p>
 
+              <p>
+                <strong>الشركة:</strong>
+                ${escapeHTML(manufacturer)}
+              </p>
 
-        return `
-          <div class="medicine-card">
+              <button onclick="showMedicineDetails(${index})">
+                عرض التفاصيل
+              </button>
 
-            <h3>${brand}</h3>
+            </div>
+          `;
 
-            <p>
-              <strong>المادة الفعالة:</strong>
-              ${generic}
-            </p>
-
-            <p>
-              <strong>الشركة:</strong>
-              ${manufacturer}
-            </p>
-
-            <button onclick="showMedicineDetails(${index})">
-              عرض التفاصيل
-            </button>
-
-          </div>
-        `;
-
-      }).join("");
-
+        }).join("");
 
     } catch (error) {
 
@@ -143,10 +152,14 @@ document.addEventListener("DOMContentLoaded", function () {
       results.innerHTML = `
         <div class="medicine-card">
 
-          <p>⚠️ حدث خطأ أثناء الاتصال بقاعدة بيانات FDA.</p>
+          <p>⚠️ حدث خطأ أثناء البحث.</p>
 
           <p>
-            تأكد من اتصال الإنترنت وحاول مرة أخرى.
+            تعذر الاتصال بمصدر معلومات الدواء حاليًا.
+          </p>
+
+          <p>
+            حاول مرة أخرى بعد قليل.
           </p>
 
         </div>
@@ -155,10 +168,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 
-
-  // ==============================
-  // تفاصيل الدواء
-  // ==============================
+  /*
+   * ============================
+   * MEDICINE DETAILS
+   * ============================
+   */
 
   window.showMedicineDetails = function (index) {
 
@@ -168,116 +182,101 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-
     const brand =
       medicine.openfda?.brand_name?.[0] ||
       "غير معروف";
-
 
     const generic =
       medicine.openfda?.generic_name?.[0] ||
       "غير معروف";
 
-
     const manufacturer =
       medicine.openfda?.manufacturer_name?.[0] ||
       "غير معروف";
 
-
     const purpose =
       medicine.purpose?.[0] ||
       medicine.indications_and_usage?.[0] ||
-      "لا توجد معلومات متاحة";
-
+      "لا توجد معلومات متاحة.";
 
     const warnings =
       medicine.warnings?.[0] ||
-      "لا توجد معلومات متاحة";
-
+      "لا توجد معلومات متاحة.";
 
     const adverse =
       medicine.adverse_reactions?.[0] ||
-      "لا توجد معلومات متاحة";
-
+      "لا توجد معلومات متاحة.";
 
     const contraindications =
       medicine.contraindications?.[0] ||
-      "لا توجد معلومات متاحة";
-
+      "لا توجد معلومات متاحة.";
 
     const dosage =
       medicine.dosage_and_administration?.[0] ||
-      "لا توجد معلومات متاحة";
-
+      "لا توجد معلومات متاحة.";
 
     const interactions =
       medicine.drug_interactions?.[0] ||
-      "لا توجد معلومات متاحة";
+      "لا توجد معلومات متاحة.";
 
 
     results.innerHTML = `
 
       <div class="medicine-card">
 
-        <h2>${brand}</h2>
+        <h2>${escapeHTML(brand)}</h2>
 
         <p>
           <strong>المادة الفعالة:</strong>
-          ${generic}
+          ${escapeHTML(generic)}
         </p>
 
         <p>
           <strong>الشركة المصنعة:</strong>
-          ${manufacturer}
+          ${escapeHTML(manufacturer)}
         </p>
 
         <hr>
 
-
         <h3>💊 الاستخدامات</h3>
-        <p>${purpose}</p>
-
+        <p>${escapeHTML(purpose)}</p>
 
         <h3>⚠️ التحذيرات</h3>
-        <p>${warnings}</p>
-
+        <p>${escapeHTML(warnings)}</p>
 
         <h3>🚫 موانع الاستعمال</h3>
-        <p>${contraindications}</p>
-
+        <p>${escapeHTML(contraindications)}</p>
 
         <h3>💥 الآثار الجانبية</h3>
-        <p>${adverse}</p>
-
+        <p>${escapeHTML(adverse)}</p>
 
         <h3>📋 الجرعة وطريقة الاستخدام</h3>
-        <p>${dosage}</p>
-
+        <p>${escapeHTML(dosage)}</p>
 
         <h3>🔄 التداخلات الدوائية</h3>
-        <p>${interactions}</p>
-
+        <p>${escapeHTML(interactions)}</p>
 
         <div
           id="pubmedResearch"
           class="source-box"
         >
-          <p>
-            🔬 جاري البحث عن الدراسات العلمية...
-          </p>
-        </div>
 
+          <p>
+            🔬 جاري تحليل الأدلة العلمية...
+          </p>
+
+        </div>
 
         <div class="source-box">
 
           <p>
-            📚 المصدر الأساسي:
+            📚 مصدر معلومات الدواء:
             U.S. FDA / openFDA
           </p>
 
           <p>
-            🔬 الأبحاث:
-            PubMed / National Library of Medicine
+            🔬 مصدر الأبحاث:
+            PubMed / NCBI
           </p>
 
         </div>
@@ -285,41 +284,53 @@ document.addEventListener("DOMContentLoaded", function () {
       </div>
     `;
 
-
     loadPubMedResearch(generic);
   };
 
 
-
-  // ==============================
-  // البحث العلمي في PubMed
-  // ==============================
+  /*
+   * ============================
+   * PUBMED RESEARCH
+   * ============================
+   */
 
   async function loadPubMedResearch(term) {
 
     const container =
       document.getElementById("pubmedResearch");
 
-
     if (!container) {
       return;
     }
 
-
     try {
 
-      /*
-       نبحث عن المادة الفعالة نفسها
-       بدلاً من البحث العام عن كلمة drug.
-      */
+      const cleanTerm =
+        term
+          .replace(/\[[^\]]*\]/g, "")
+          .trim();
 
-      const searchTerm =
-        `"${term}" AND
-        (clinical trial[pt] OR
-        randomized controlled trial[pt] OR
-        systematic review[pt] OR
-        meta-analysis[pt] OR
-        review[pt])`;
+      /*
+       * نبحث عن اسم الدواء نفسه
+       * داخل Title/Abstract.
+       *
+       * ثم نعطي أولوية لأنواع الدراسات
+       * الأكثر فائدة للمستخدم الصيدلاني.
+       */
+
+      const searchQuery =
+        '("' +
+        cleanTerm +
+        '"[Title/Abstract]) AND (' +
+
+        'clinical trial[pt] OR ' +
+        'randomized controlled trial[pt] OR ' +
+        'systematic review[pt] OR ' +
+        'meta-analysis[pt] OR ' +
+        'review[pt] OR ' +
+        'observational study[pt]' +
+
+        ')';
 
 
       const searchUrl =
@@ -328,13 +339,17 @@ document.addEventListener("DOMContentLoaded", function () {
         "?db=pubmed" +
 
         "&term=" +
-        encodeURIComponent(searchTerm) +
+        encodeURIComponent(searchQuery) +
 
         "&retmode=json" +
 
-        "&retmax=8" +
+        "&retmax=12" +
 
-        "&sort=date";
+        "&sort=date" +
+
+        "&tool=MEDNEX" +
+
+        "&email=mednex.app@example.com";
 
 
       const searchResponse =
@@ -361,8 +376,11 @@ document.addEventListener("DOMContentLoaded", function () {
           <h3>🔬 الأبحاث العلمية</h3>
 
           <p>
-            لم يتم العثور على دراسات سريرية أو
-            مراجعات مرتبطة مباشرة بالمادة الفعالة.
+            لم يتم العثور على أبحاث بشرية مناسبة مرتبطة مباشرة بهذا الدواء.
+          </p>
+
+          <p>
+            يمكنك البحث عنه مباشرة في PubMed.
           </p>
 
         `;
@@ -371,10 +389,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
 
-
-      // جلب تفاصيل الدراسات
+      /*
+       * جلب تفاصيل الأبحاث
+       */
 
       const fetchUrl =
+
         "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi" +
 
         "?db=pubmed" +
@@ -382,7 +402,11 @@ document.addEventListener("DOMContentLoaded", function () {
         "&id=" +
         ids.join(",") +
 
-        "&retmode=xml";
+        "&retmode=xml" +
+
+        "&tool=MEDNEX" +
+
+        "&email=mednex.app@example.com";
 
 
       const fetchResponse =
@@ -415,206 +439,346 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
 
+      /*
+       * ترتيب الأدلة
+       */
+
+      const articleData =
+        articles.map(function (article) {
+
+          const pmid =
+            article.querySelector("PMID")?.textContent ||
+            "";
+
+          const title =
+            article.querySelector("ArticleTitle")?.textContent ||
+            "بدون عنوان";
+
+
+          const journal =
+            article.querySelector("Journal Title")?.textContent ||
+            "مجلة غير معروفة";
+
+
+          const year =
+            article.querySelector("PubDate Year")?.textContent ||
+            article.querySelector("PubDate MedlineDate")?.textContent ||
+            "";
+
+
+          const abstractParts =
+            Array.from(
+              article.querySelectorAll("AbstractText")
+            );
+
+
+          const abstract =
+            abstractParts
+              .map(function (item) {
+                return item.textContent;
+              })
+              .join(" ") ||
+            "لا يوجد ملخص متاح.";
+
+
+          const publicationTypes =
+            Array.from(
+              article.querySelectorAll("PublicationType")
+            )
+            .map(function (item) {
+              return item.textContent;
+            });
+
+
+          const lowerTitle =
+            title.toLowerCase();
+
+
+          const lowerAbstract =
+            abstract.toLowerCase();
+
+
+          /*
+           * تصنيف الدراسة
+           */
+
+          let studyType =
+            "📄 دراسة علمية";
+
+
+          let priority =
+            1;
+
+
+          if (
+            publicationTypes.includes(
+              "Meta-Analysis"
+            )
+          ) {
+
+            studyType =
+              "📊 تحليل تلوي";
+
+            priority = 6;
+
+          } else if (
+            publicationTypes.includes(
+              "Systematic Review"
+            )
+          ) {
+
+            studyType =
+              "📚 مراجعة منهجية";
+
+            priority = 5;
+
+          } else if (
+            publicationTypes.includes(
+              "Randomized Controlled Trial"
+            )
+          ) {
+
+            studyType =
+              "🩺 تجربة سريرية عشوائية";
+
+            priority = 5;
+
+          } else if (
+            publicationTypes.includes(
+              "Clinical Trial"
+            )
+          ) {
+
+            studyType =
+              "🩺 تجربة سريرية";
+
+            priority = 4;
+
+          } else if (
+            publicationTypes.includes(
+              "Observational Study"
+            )
+          ) {
+
+            studyType =
+              "📊 دراسة رصدية";
+
+            priority = 3;
+
+          } else if (
+            publicationTypes.includes(
+              "Review"
+            )
+          ) {
+
+            studyType =
+              "📚 مراجعة علمية";
+
+            priority = 3;
+          }
+
+
+          /*
+           * هل الدواء مذكور بوضوح؟
+           */
+
+          const drugName =
+            cleanTerm.toLowerCase();
+
+
+          const directMention =
+            lowerTitle.includes(drugName);
+
+
+          /*
+           * إذا ظهر اسم الدواء في العنوان
+           * نعتبره أكثر ارتباطًا مباشرة.
+           */
+
+          if (directMention) {
+            priority += 3;
+          }
+
+
+          /*
+           * البحث عن مؤشرات تدل على دراسة
+           * للفئة الدوائية وليس الدواء فقط.
+           */
+
+          const classTerms = [
+
+            "proton pump inhibitor",
+            "proton pump inhibitors",
+            "ppi",
+            "ppis",
+            "drug class",
+            "class effect"
+
+          ];
+
+
+          const classLevel =
+            classTerms.some(function (word) {
+
+              return (
+                lowerTitle.includes(word) ||
+                lowerAbstract.includes(word)
+              );
+
+            });
+
+
+          return {
+
+            pmid,
+            title,
+            journal,
+            year,
+            abstract,
+            publicationTypes,
+            studyType,
+            priority,
+            directMention,
+            classLevel
+
+          };
+
+        });
+
+
+      /*
+       * ترتيب النتائج
+       */
+
+      articleData.sort(function (a, b) {
+
+        return b.priority - a.priority;
+
+      });
+
+
+      /*
+       * عرض النتائج
+       */
+
       let html = `
 
         <h3>
-          🔬 أحدث الأبحاث العلمية
+          🔬 الأدلة والأبحاث العلمية
         </h3>
 
         <p>
-          نتائج مرتبطة بالمادة الفعالة:
-          <strong>${term}</strong>
+          نتائج مرتبطة باسم الدواء من PubMed / NCBI
         </p>
 
       `;
 
 
+      articleData
+        .slice(0, 8)
+        .forEach(function (article) {
 
-      articles.forEach(function (article) {
 
-        const pmid =
-          article.querySelector("PMID")
-            ?.textContent || "";
+          let evidenceLabel =
+            "🔎 دليل مرتبط بالدواء";
 
 
-        const title =
-          article.querySelector("ArticleTitle")
-            ?.textContent ||
-          "بدون عنوان";
+          if (article.directMention) {
 
+            evidenceLabel =
+              "🎯 دليل مباشر — اسم الدواء في عنوان الدراسة";
 
-        const journal =
-          article.querySelector("Journal Title")
-            ?.textContent ||
-          "مجلة غير معروفة";
+          } else if (article.classLevel) {
 
+            evidenceLabel =
+              "📚 دليل على الفئة الدوائية — قد يكون غير مباشر";
 
-        const year =
-          article.querySelector("PubDate Year")
-            ?.textContent ||
+          }
 
-          article.querySelector("PubDate MedlineDate")
-            ?.textContent ||
 
-          "";
+          html += `
 
+            <div class="research-card">
 
+              <h4>
+                ${escapeHTML(article.title)}
+              </h4>
 
-        // الملخص
+              <p>
+                <strong>
+                  نوع الدراسة:
+                </strong>
+                ${article.studyType}
+              </p>
 
-        const abstractParts =
-          Array.from(
-            article.querySelectorAll("AbstractText")
-          );
+              <p>
+                <strong>
+                  مستوى الارتباط:
+                </strong>
+                ${evidenceLabel}
+              </p>
 
+              <p>
+                <strong>
+                  المجلة:
+                </strong>
+                ${escapeHTML(article.journal)}
+              </p>
 
-        const abstract =
-          abstractParts
-            .map(function (item) {
-              return item.textContent;
-            })
-            .join(" ") ||
+              <p>
+                <strong>
+                  السنة:
+                </strong>
+                ${escapeHTML(article.year)}
+              </p>
 
-          "لا يوجد ملخص متاح.";
+              <p>
+                ${escapeHTML(
+                  article.abstract.substring(0, 500)
+                )}
+                ${
+                  article.abstract.length > 500
+                    ? "..."
+                    : ""
+                }
+              </p>
 
+              <a
+                href="https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(article.pmid)}/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                قراءة الدراسة على PubMed
+              </a>
 
+            </div>
 
-        // نوع الدراسة
+          `;
 
-        const publicationTypes =
-          Array.from(
-            article.querySelectorAll("PublicationType")
-          )
-          .map(function (item) {
-            return item.textContent;
-          });
+        });
 
 
+      html += `
 
-        let studyType =
-          "📄 نوع الدراسة غير محدد";
+        <div class="source-box">
 
+          <p>
+            📚 المصدر:
+            PubMed / National Library of Medicine
+          </p>
 
-        if (
-          publicationTypes.includes(
-            "Meta-Analysis"
-          )
-        ) {
+          <p>
+            ملاحظة: تصنيف نوع الدراسة لا يعني
+            تلقائيًا أن الدليل عالي الجودة.
+          </p>
 
-          studyType =
-            "📊 تحليل تلوي";
+        </div>
 
-        }
+      `;
 
-        else if (
-          publicationTypes.includes(
-            "Systematic Review"
-          )
-        ) {
 
-          studyType =
-            "📚 مراجعة منهجية";
-
-        }
-
-        else if (
-          publicationTypes.includes(
-            "Randomized Controlled Trial"
-          )
-        ) {
-
-          studyType =
-            "🩺 تجربة سريرية عشوائية";
-
-        }
-
-        else if (
-          publicationTypes.includes(
-            "Clinical Trial"
-          )
-        ) {
-
-          studyType =
-            "🩺 تجربة سريرية";
-
-        }
-
-        else if (
-          publicationTypes.includes(
-            "Review"
-          )
-        ) {
-
-          studyType =
-            "📖 مراجعة علمية";
-
-        }
-
-
-
-        html += `
-
-          <div class="research-card">
-
-            <h4>
-              ${title}
-            </h4>
-
-
-            <p>
-              <strong>
-                نوع الدراسة:
-              </strong>
-
-              ${studyType}
-            </p>
-
-
-            <p>
-              <strong>
-                المجلة:
-              </strong>
-
-              ${journal}
-            </p>
-
-
-            <p>
-              <strong>
-                السنة:
-              </strong>
-
-              ${year}
-            </p>
-
-
-            <p>
-              ${abstract.substring(0, 600)}
-
-              ${
-                abstract.length > 600
-                  ? "..."
-                  : ""
-              }
-            </p>
-
-
-            <a
-              href="https://pubmed.ncbi.nlm.nih.gov/${pmid}/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              قراءة الدراسة كاملة على PubMed →
-            </a>
-
-          </div>
-
-        `;
-      });
-
-
-
-      container.innerHTML = html;
+      container.innerHTML =
+        html;
 
 
     } catch (error) {
@@ -632,17 +796,38 @@ document.addEventListener("DOMContentLoaded", function () {
         </h3>
 
         <p>
-          ⚠️ تعذر تحميل الأبحاث العلمية
-          حاليًا.
+          ⚠️ تعذر تحميل الأبحاث العلمية حاليًا.
         </p>
 
         <p>
-          يمكنك البحث مباشرة في PubMed
-          لاحقًا.
+          حاول مرة أخرى بعد قليل.
         </p>
 
       `;
+
     }
+
+  }
+
+
+  /*
+   * ============================
+   * SECURITY
+   * ============================
+   */
+
+  function escapeHTML(value) {
+
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
 });
