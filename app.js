@@ -147,16 +147,18 @@ async function loadPubMedResearch(term) {
 
   if (!box) return;
 
-  box.innerHTML = "<p>🔬 جاري البحث في PubMed...</p>";
+  box.innerHTML = "<p>🔬 جاري البحث عن أحدث الدراسات...</p>";
 
   try {
 
     const searchUrl =
       "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi" +
       "?db=pubmed" +
-      "&term=" + encodeURIComponent(term) +
+      "&term=" +
+      encodeURIComponent(term + " drug") +
       "&retmode=json" +
-      "&retmax=5";
+      "&retmax=5" +
+      "&sort=date";
 
     const response = await fetch(searchUrl);
 
@@ -171,72 +173,131 @@ async function loadPubMedResearch(term) {
 
     if (ids.length === 0) {
 
-      box.innerHTML =
-        "<p>لم نجد أبحاثًا مطابقة في PubMed.</p>";
+      box.innerHTML = `
+        <h4>🔬 الأبحاث العلمية</h4>
+        <p>لم نجد أبحاثًا مطابقة في PubMed.</p>
+      `;
 
       return;
     }
 
-    const summaryUrl =
-      "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi" +
+    const fetchUrl =
+      "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi" +
       "?db=pubmed" +
-      "&id=" + ids.join(",") +
-      "&retmode=json";
+      "&id=" +
+      ids.join(",") +
+      "&retmode=xml";
 
-    const summaryResponse =
-      await fetch(summaryUrl);
+    const fetchResponse = await fetch(fetchUrl);
 
-    if (!summaryResponse.ok) {
-      throw new Error("PubMed summary failed");
+    if (!fetchResponse.ok) {
+      throw new Error("PubMed fetch failed");
     }
 
-    const summaryData =
-      await summaryResponse.json();
+    const xmlText = await fetchResponse.text();
 
-    const result = summaryData.result || {};
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(
+      xmlText,
+      "text/xml"
+    );
 
-    let html =
-      "<h4>🔬 أبحاث علمية من PubMed</h4>";
+    const articles =
+      Array.from(
+        xml.querySelectorAll("PubmedArticle")
+      );
 
-    ids.forEach(function (id) {
+    let html = `
+      <h4>🔬 الأبحاث العلمية من PubMed</h4>
+      <p>
+        أحدث 5 نتائج مرتبطة بـ
+        <strong>${term}</strong>
+      </p>
+    `;
 
-      const article = result[id];
+    articles.forEach(function (article) {
 
-      if (!article) return;
+      const pmid =
+        article.querySelector("PMID")?.textContent ||
+        "";
 
       const title =
-        article.title ||
-        "عنوان غير متوفر";
+        article.querySelector("ArticleTitle")?.textContent ||
+        "عنوان البحث غير متوفر";
 
       const journal =
-        article.fulljournalname ||
-        article.source ||
-        "مجلة غير معروفة";
+        article.querySelector(
+          "Journal Title"
+        )?.textContent ||
+        "المجلة غير متوفرة";
 
-      const date =
-        article.pubdate ||
-        "تاريخ غير متوفر";
+      const year =
+        article.querySelector(
+          "PubDate Year"
+        )?.textContent ||
+        article.querySelector(
+          "PubDate MedlineDate"
+        )?.textContent ||
+        "غير متوفر";
+
+      const abstractParts =
+        Array.from(
+          article.querySelectorAll(
+            "AbstractText"
+          )
+        );
+
+      const abstract =
+        abstractParts
+          .map(function (item) {
+            return item.textContent;
+          })
+          .join(" ") ||
+        "الملخص غير متوفر في السجل.";
+
+      const shortAbstract =
+        abstract.length > 500
+          ? abstract.substring(0, 500) + "..."
+          : abstract;
 
       html += `
-        <div class="info-item" style="margin-top:12px;">
+        <div
+          class="info-item"
+          style="margin-top:15px;"
+        >
 
-          <strong>${title}</strong>
+          <strong>
+            ${title}
+          </strong>
 
           <p>
-            📰 ${journal}
+            📰 <strong>المجلة:</strong>
+            ${journal}
           </p>
 
           <p>
-            📅 ${date}
+            📅 <strong>السنة:</strong>
+            ${year}
           </p>
 
-          <a
-            href="https://pubmed.ncbi.nlm.nih.gov/${id}/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            🔗 عرض البحث في PubMed
-          </a>
+          <p>
+            📄 <strong>الملخص:</strong>
+            ${shortAbstract}
+          </p>
+
+          ${
+            pmid
+              ? `
+                <a
+                  href="https://pubmed.ncbi.nlm.nih.gov/${pmid}/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  🔗 قراءة البحث الكامل في PubMed
+                </a>
+              `
+              : ""
+          }
 
         </div>
       `;
@@ -247,10 +308,17 @@ async function loadPubMedResearch(term) {
 
   } catch (error) {
 
-    console.error("PubMed error:", error);
+    console.error(
+      "MEDNEX PubMed error:",
+      error
+    );
 
-    box.innerHTML =
-      "<p>⚠️ تعذر تحميل الأبحاث من PubMed حاليًا.</p>";
+    box.innerHTML = `
+      <h4>🔬 الأبحاث العلمية</h4>
+      <p>
+        ⚠️ تعذر تحميل الأبحاث من PubMed حاليًا.
+      </p>
+    `;
   }
 }
   
