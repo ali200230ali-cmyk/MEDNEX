@@ -1,451 +1,335 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>MEDNEX | منصة المعلومات الدوائية</title>
-
-  <meta
-    name="description"
-    content="MEDNEX منصة ذكية للبحث عن الأدوية والمعلومات الدوائية والأبحاث العلمية."
-  >
+  <title>MEDNEX | Smart Medicine Guide</title>
 
   <style>
-
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
-      font-family: Arial, Tahoma, sans-serif;
-      background: #f4f8fa;
-      color: #172b35;
+      font-family: Arial, sans-serif;
+      background: #f4f8fb;
+      color: #17324d;
+      min-height: 100vh;
     }
-
-    /* HEADER */
 
     header {
-      background: linear-gradient(
-        135deg,
-        #063b4c,
-        #087f8c
-      );
-
-      color: white;
-      padding: 18px 20px;
-
+      background: white;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #e2eaf0;
       position: sticky;
       top: 0;
-      z-index: 100;
-    }
-
-    .header-content {
-      max-width: 1100px;
-      margin: auto;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
+      z-index: 10;
     }
 
     .logo {
-      font-size: 28px;
-      font-weight: bold;
-      letter-spacing: 1px;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 2px;
     }
 
     .tagline {
-      font-size: 13px;
-      opacity: 0.85;
+      margin-top: 5px;
+      color: #6b7f90;
+      font-size: 14px;
     }
 
-    /* HERO */
-
     .hero {
-      background:
-        linear-gradient(
-          135deg,
-          #e7f8fa,
-          #ffffff
-        );
-
-      padding: 55px 20px 45px;
+      padding: 35px 18px 25px;
       text-align: center;
     }
 
-    .hero-content {
-      max-width: 850px;
-      margin: auto;
-    }
-
     .hero h1 {
-      font-size: 36px;
-      margin: 0 0 15px;
-      color: #063b4c;
+      font-size: 28px;
+      margin-bottom: 10px;
     }
 
     .hero p {
-      font-size: 17px;
-      color: #55717b;
-      line-height: 1.8;
-    }
-
-    /* SEARCH */
-
-    .search-container {
-      max-width: 750px;
-      margin: 30px auto 0;
+      color: #66798a;
+      max-width: 600px;
+      margin: auto;
+      line-height: 1.7;
     }
 
     .search-box {
-      background: white;
-      padding: 8px;
-      border-radius: 16px;
-
+      max-width: 650px;
+      margin: 25px auto;
       display: flex;
       gap: 8px;
-
-      box-shadow:
-        0 8px 30px rgba(0,0,0,0.08);
     }
 
-    #medicineSearch {
+    .search-box input {
       flex: 1;
-
-      border: none;
-      outline: none;
-
       padding: 15px;
-
-      font-size: 16px;
+      border: 1px solid #d7e2ea;
       border-radius: 12px;
-
-      direction: rtl;
+      font-size: 16px;
+      outline: none;
+      background: white;
     }
 
-    #searchButton {
+    .search-box button {
       border: none;
-
-      background: #087f8c;
-      color: white;
-
-      padding: 0 25px;
-
       border-radius: 12px;
-
+      padding: 0 22px;
+      background: #1677ff;
+      color: white;
       font-size: 16px;
-      font-weight: bold;
-
       cursor: pointer;
     }
 
-    #searchButton:hover {
-      background: #063b4c;
+    .search-box button:hover {
+      opacity: 0.9;
     }
 
-    /* MAIN */
+    .sections {
+      max-width: 900px;
+      margin: 10px auto 30px;
+      padding: 0 15px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
 
-    main {
-      max-width: 1100px;
-      margin: auto;
-      padding: 35px 20px;
+    .section-card {
+      background: white;
+      border: 1px solid #e3ebf1;
+      border-radius: 18px;
+      padding: 22px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .section-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(30, 70, 100, 0.08);
+    }
+
+    .section-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .section-card h3 {
+      font-size: 17px;
+      margin-bottom: 6px;
+    }
+
+    .section-card p {
+      font-size: 13px;
+      color: #718493;
     }
 
     #results {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+      max-width: 900px;
+      margin: auto;
+      padding: 0 15px 40px;
     }
-
-    /* MEDICINE CARD */
 
     .medicine-card {
       background: white;
-
+      border: 1px solid #e1e9ef;
       border-radius: 18px;
-
-      padding: 25px;
-
-      box-shadow:
-        0 5px 25px rgba(0,0,0,0.06);
-
-      border: 1px solid #e3edef;
-
-      line-height: 1.8;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 5px 20px rgba(30, 70, 100, 0.05);
     }
 
+    .medicine-card h2,
     .medicine-card h3 {
-      color: #063b4c;
-      font-size: 23px;
-      margin-top: 0;
-    }
-
-    .medicine-card h4 {
-      color: #087f8c;
-      margin-bottom: 5px;
+      margin-bottom: 12px;
     }
 
     .medicine-card p {
-      color: #465e67;
+      line-height: 1.8;
+      margin-bottom: 10px;
+      color: #43596a;
+    }
+
+    .medicine-card button {
+      margin-top: 10px;
+      padding: 11px 18px;
+      border: none;
+      border-radius: 10px;
+      background: #1677ff;
+      color: white;
+      cursor: pointer;
     }
 
     .medicine-card hr {
       border: none;
-      border-top: 1px solid #e7edef;
+      border-top: 1px solid #e6edf2;
       margin: 20px 0;
     }
-
-    .medicine-card a {
-      color: #087f8c;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-    .medicine-card a:hover {
-      text-decoration: underline;
-    }
-
-    /* INFO GRID */
-
-    .info-grid {
-      display: grid;
-
-      grid-template-columns:
-        repeat(auto-fit, minmax(200px, 1fr));
-
-      gap: 15px;
-
-      margin: 20px 0;
-    }
-
-    .info-item {
-      background: #f4fafb;
-
-      padding: 15px;
-
-      border-radius: 12px;
-
-      border-right: 4px solid #087f8c;
-    }
-
-    .info-item strong {
-      display: block;
-      color: #063b4c;
-      margin-bottom: 5px;
-    }
-
-    /* SOURCE */
 
     .source-box {
-      margin-top: 25px;
-
-      padding: 18px;
-
-      background: #eef7f9;
-
+      margin-top: 20px;
+      padding: 16px;
+      background: #f1f7fb;
       border-radius: 12px;
-
-      border: 1px solid #d8ecef;
-    }
-
-    /* FOOTER */
-
-    footer {
-      margin-top: 50px;
-
-      background: #063b4c;
-
-      color: white;
-
-      text-align: center;
-
-      padding: 30px 20px;
-
       font-size: 14px;
     }
 
-    footer p {
-      margin: 6px 0;
-      opacity: 0.85;
+    .research-card {
+      background: #fafcfe;
+      border: 1px solid #e0e9ef;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 14px;
     }
 
-    /* MOBILE */
+    .research-card h4 {
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
 
-    @media (max-width: 600px) {
+    .research-card p {
+      font-size: 14px;
+    }
 
-      .header-content {
-        flex-direction: column;
-        gap: 5px;
-      }
+    .research-card a {
+      display: inline-block;
+      margin-top: 8px;
+      color: #1677ff;
+      text-decoration: none;
+      font-weight: bold;
+    }
 
-      .hero {
-        padding: 40px 15px;
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: #66798a;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 15px;
+      background: white;
+      border-top: 1px solid #e3ebf1;
+      color: #718493;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    @media (min-width: 700px) {
+      .sections {
+        grid-template-columns: repeat(3, 1fr);
       }
 
       .hero h1 {
-        font-size: 28px;
+        font-size: 36px;
       }
-
-      .hero p {
-        font-size: 15px;
-      }
-
-      .search-box {
-        flex-direction: column;
-        padding: 10px;
-      }
-
-      #searchButton {
-        padding: 14px;
-      }
-
-      .medicine-card {
-        padding: 18px;
-      }
-
     }
 
+    @media (max-width: 500px) {
+      .search-box {
+        flex-direction: column;
+      }
+
+      .search-box button {
+        padding: 13px;
+      }
+    }
   </style>
-
 </head>
-
 
 <body>
 
-
-  <!-- HEADER -->
-
   <header>
-
-    <div class="header-content">
-
-      <div class="logo">
-        MEDNEX 💊
-      </div>
-
-      <div class="tagline">
-        Smart Healthcare & Drug Information
-      </div>
-
-    </div>
-
+    <div class="logo">MEDNEX</div>
+    <div class="tagline">Your Smart Medicine Guide</div>
   </header>
-
-
-  <!-- HERO -->
-
-  <section class="hero">
-
-    <div class="hero-content">
-
-      <h1>
-        معلوماتك الدوائية تبدأ من هنا
-      </h1>
-
-      <p>
-        ابحث عن الدواء للحصول على المعلومات الدوائية
-        والأبحاث العلمية من المصادر الطبية.
-      </p>
-
-
-      <!-- SEARCH -->
-
-      <div class="search-container">
-
-        <div class="search-box">
-
-          <input
-            type="text"
-            id="medicineSearch"
-            placeholder="اكتب اسم الدواء مثل acetaminophen"
-            autocomplete="off"
-          >
-
-          <button id="searchButton">
-            🔎 بحث
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- RESULTS -->
 
   <main>
 
-    <div id="results">
+    <section class="hero">
+      <h1>دليلك الذكي للأدوية</h1>
+      <p>
+        معلومات دوائية موثوقة، أبحاث علمية، تحذيرات،
+        جرعات وتداخلات دوائية في مكان واحد.
+      </p>
 
-      <div class="medicine-card">
+      <div class="search-box">
+        <input
+          id="medicineSearch"
+          type="text"
+          placeholder="ابحث عن اسم الدواء..."
+        >
 
-        <h3>
-          👋 أهلًا بك في MEDNEX
-        </h3>
+        <button id="searchButton">
+          بحث 🔎
+        </button>
+      </div>
+    </section>
 
-        <p>
-          اكتب اسم دواء في مربع البحث للبدء.
-        </p>
+    <section class="sections">
 
-        <div class="info-grid">
-
-          <div class="info-item">
-            <strong>💊 معلومات دوائية</strong>
-            بيانات من مصادر دوائية رسمية.
-          </div>
-
-          <div class="info-item">
-            <strong>🔬 أبحاث علمية</strong>
-            الوصول إلى الدراسات المرتبطة بالدواء.
-          </div>
-
-          <div class="info-item">
-            <strong>📚 مصادر</strong>
-            عرض مصادر المعلومات المستخدمة.
-          </div>
-
-        </div>
-
+      <div class="section-card">
+        <div class="section-icon">💊</div>
+        <h3>الأدوية</h3>
+        <p>معلومات الدواء والمادة الفعالة</p>
       </div>
 
-    </div>
+      <div class="section-card">
+        <div class="section-icon">🔬</div>
+        <h3>الأبحاث</h3>
+        <p>أحدث الدراسات العلمية</p>
+      </div>
+
+      <div class="section-card">
+        <div class="section-icon">⚠️</div>
+        <h3>التحذيرات</h3>
+        <p>التحذيرات وموانع الاستعمال</p>
+      </div>
+
+      <div class="section-card">
+        <div class="section-icon">🔄</div>
+        <h3>التداخلات</h3>
+        <p>التداخلات الدوائية</p>
+      </div>
+
+      <div class="section-card">
+        <div class="section-icon">📋</div>
+        <h3>الجرعات</h3>
+        <p>معلومات الجرعة وطريقة الاستخدام</p>
+      </div>
+
+      <div class="section-card">
+        <div class="section-icon">🧠</div>
+        <h3>AI Assistant</h3>
+        <p>مساعد ذكي للمعلومات الصحية</p>
+      </div>
+
+    </section>
+
+    <section id="results"></section>
 
   </main>
 
-
-  <!-- FOOTER -->
-
   <footer>
-
-    <strong>
-      MEDNEX
-    </strong>
-
     <p>
-      Smart Healthcare Platform
+      MEDNEX — Smart Medicine & Health Platform
     </p>
 
     <p>
-      © 2026 MEDNEX
+      المعلومات للتثقيف الصحي ولا تغني عن استشارة الطبيب أو الصيدلي.
     </p>
 
+    <p>
+      المصادر: U.S. FDA / openFDA / PubMed
+    </p>
   </footer>
 
-
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 
 </body>
-
 </html>
