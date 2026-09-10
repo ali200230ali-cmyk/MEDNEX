@@ -222,7 +222,23 @@ async function loadPubMedResearch(term) {
       ].map(item => item.textContent.toLowerCase());
 
       let studyType = "📄 بحث علمي";
-
+if (publicationTypes.some(x => x.includes("systematic review"))) {
+  studyType = "📚 مراجعة منهجية";
+} else if (publicationTypes.some(x => x.includes("meta-analysis"))) {
+  studyType = "📊 تحليل تلوي";
+} else if (publicationTypes.some(x => x.includes("randomized controlled trial"))) {
+  studyType = "🩺 تجربة سريرية عشوائية";
+} else if (publicationTypes.some(x => x.includes("clinical trial"))) {
+  studyType = "🩺 تجربة سريرية";
+} else if (publicationTypes.some(x => x.includes("observational study"))) {
+  studyType = "📊 دراسة رصدية";
+} else if (publicationTypes.some(x => x.includes("case reports"))) {
+  studyType = "👤 تقرير حالة";
+} else if (publicationTypes.some(x => x.includes("animal study"))) {
+  studyType = "🧪 دراسة حيوانية";
+} else if (publicationTypes.some(x => x.includes("in vitro"))) {
+  studyType = "🔬 دراسة مخبرية";
+                          }
       if (publicationTypes.some(x => x.includes("systematic review"))) {
         studyType = "📚 مراجعة منهجية";
       } else if (publicationTypes.some(x => x.includes("meta-analysis"))) {
