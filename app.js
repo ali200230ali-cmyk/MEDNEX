@@ -155,7 +155,16 @@ async function loadPubMedResearch(term) {
       "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi" +
       "?db=pubmed" +
       "&term=" +
-      encodeURIComponent(term + " drug") +
+encodeURIComponent(
+  "(" + term + ") AND (" +
+  "clinical trial[pt] OR " +
+  "randomized controlled trial[pt] OR " +
+  "systematic review[pt] OR " +
+  "meta-analysis[pt] OR " +
+  "review[pt] OR " +
+  "observational study[pt]" +
+  ")"
+) + +
       "&retmode=json" +
       "&retmax=5" +
       "&sort=date";
