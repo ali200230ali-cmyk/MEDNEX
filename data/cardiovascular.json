@@ -1,0 +1,260 @@
+[
+  {
+    "genericName": "Amlodipine",
+    "arabicName": "أملوديبين",
+    "class": "Calcium Channel Blocker",
+    "therapeuticClass": "Antihypertensive",
+    "indications": [
+      "Hypertension",
+      "Angina pectoris"
+    ],
+    "strengths": [
+      "5 mg",
+      "10 mg"
+    ],
+    "dosageForms": [
+      "Tablet"
+    ],
+    "mechanism": "Calcium channel blocker that reduces vascular smooth muscle contraction and lowers peripheral vascular resistance.",
+    "contraindications": [],
+    "warnings": [],
+    "adverseEffects": [
+      "Peripheral edema",
+      "Headache",
+      "Dizziness",
+      "Flushing",
+      "Palpitations"
+    ],
+    "interactions": [],
+    "pregnancy": "Use only when clinically appropriate and under medical supervision.",
+    "renalAdjustment": "Usually no dose adjustment is required.",
+    "hepaticAdjustment": "Dose selection should be cautious in hepatic impairment.",
+    "monitoring": [
+      "Blood pressure",
+      "Peripheral edema"
+    ],
+    "sources": [
+      "FDA",
+      "DailyMed",
+      "PubMed"
+    ]
+  },
+
+  {
+    "genericName": "Lisinopril",
+    "arabicName": "ليزينوبريل",
+    "class": "ACE Inhibitor",
+    "therapeuticClass": "Antihypertensive",
+    "indications": [
+      "Hypertension",
+      "Heart failure",
+      "Post-myocardial infarction"
+    ],
+    "strengths": [
+      "5 mg",
+      "10 mg",
+      "20 mg",
+      "40 mg"
+    ],
+    "dosageForms": [
+      "Tablet"
+    ],
+    "mechanism": "Inhibits angiotensin-converting enzyme and reduces formation of angiotensin II.",
+    "contraindications": [
+      "Previous ACE inhibitor-associated angioedema",
+      "Pregnancy"
+    ],
+    "warnings": [
+      "Hyperkalemia",
+      "Hypotension",
+      "Renal impairment",
+      "Angioedema"
+    ],
+    "adverseEffects": [
+      "Dry cough",
+      "Dizziness",
+      "Hyperkalemia",
+      "Hypotension",
+      "Angioedema"
+    ],
+    "interactions": [
+      "Potassium supplements",
+      "Potassium-sparing diuretics",
+      "NSAIDs",
+      "Lithium"
+    ],
+    "pregnancy": "Contraindicated during pregnancy.",
+    "renalAdjustment": "Dose adjustment may be required according to renal function.",
+    "hepaticAdjustment": "Usually no specific adjustment is required.",
+    "monitoring": [
+      "Blood pressure",
+      "Serum creatinine",
+      "Serum potassium"
+    ],
+    "sources": [
+      "FDA",
+      "DailyMed",
+      "PubMed"
+    ]
+  },
+
+  {
+    "genericName": "Losartan",
+    "arabicName": "لوسارتان",
+    "class": "Angiotensin II Receptor Blocker",
+    "therapeuticClass": "Antihypertensive",
+    "indications": [
+      "Hypertension",
+      "Diabetic nephropathy"
+    ],
+    "strengths": [
+      "25 mg",
+      "50 mg",
+      "100 mg"
+    ],
+    "dosageForms": [
+      "Tablet"
+    ],
+    "mechanism": "Blocks angiotensin II AT1 receptors, reducing vasoconstriction and aldosterone-mediated effects.",
+    "contraindications": [
+      "Pregnancy"
+    ],
+    "warnings": [
+      "Hyperkalemia",
+      "Renal impairment",
+      "Hypotension"
+    ],
+    "adverseEffects": [
+      "Dizziness",
+      "Hyperkalemia",
+      "Hypotension"
+    ],
+    "interactions": [
+      "Potassium supplements",
+      "Potassium-sparing diuretics",
+      "NSAIDs",
+      "Lithium"
+    ],
+    "pregnancy": "Contraindicated during pregnancy.",
+    "renalAdjustment": "Monitor renal function and potassium.",
+    "hepaticAdjustment": "Lower starting doses may be considered in hepatic impairment.",
+    "monitoring": [
+      "Blood pressure",
+      "Serum creatinine",
+      "Serum potassium"
+    ],
+    "sources": [
+      "FDA",
+      "DailyMed",
+      "PubMed"
+    ]
+  },
+
+  {
+    "genericName": "Atorvastatin",
+    "arabicName": "أتورفاستاتين",
+    "class": "HMG-CoA Reductase Inhibitor",
+    "therapeuticClass": "Lipid-lowering agent",
+    "indications": [
+      "Hypercholesterolemia",
+      "Reduction of cardiovascular risk"
+    ],
+    "strengths": [
+      "10 mg",
+      "20 mg",
+      "40 mg",
+      "80 mg"
+    ],
+    "dosageForms": [
+      "Tablet"
+    ],
+    "mechanism": "Inhibits HMG-CoA reductase and reduces hepatic cholesterol synthesis.",
+    "contraindications": [
+      "Active liver disease",
+      "Pregnancy"
+    ],
+    "warnings": [
+      "Myopathy",
+      "Rhabdomyolysis",
+      "Liver enzyme abnormalities"
+    ],
+    "adverseEffects": [
+      "Myalgia",
+      "Headache",
+      "Gastrointestinal symptoms",
+      "Elevated liver enzymes"
+    ],
+    "interactions": [
+      "Strong CYP3A4 inhibitors",
+      "Grapefruit juice",
+      "Cyclosporine"
+    ],
+    "pregnancy": "Generally contraindicated during pregnancy.",
+    "renalAdjustment": "Usually no dose adjustment is required.",
+    "hepaticAdjustment": "Avoid in active liver disease.",
+    "monitoring": [
+      "Lipid profile",
+      "Liver enzymes when clinically indicated",
+      "Muscle symptoms"
+    ],
+    "sources": [
+      "FDA",
+      "DailyMed",
+      "PubMed"
+    ]
+  },
+
+  {
+    "genericName": "Furosemide",
+    "arabicName": "فوروسيميد",
+    "class": "Loop Diuretic",
+    "therapeuticClass": "Diuretic",
+    "indications": [
+      "Edema",
+      "Heart failure",
+      "Hypertension"
+    ],
+    "strengths": [
+      "20 mg",
+      "40 mg"
+    ],
+    "dosageForms": [
+      "Tablet",
+      "Injection"
+    ],
+    "mechanism": "Inhibits sodium and chloride reabsorption in the thick ascending limb of the loop of Henle.",
+    "contraindications": [],
+    "warnings": [
+      "Dehydration",
+      "Electrolyte abnormalities",
+      "Hypotension"
+    ],
+    "adverseEffects": [
+      "Hypokalemia",
+      "Hyponatremia",
+      "Dizziness",
+      "Dehydration",
+      "Hypotension"
+    ],
+    "interactions": [
+      "NSAIDs",
+      "Digoxin",
+      "Lithium",
+      "Other antihypertensives"
+    ],
+    "pregnancy": "Use only when clinically indicated.",
+    "renalAdjustment": "Dose depends on renal function and clinical response.",
+    "hepaticAdjustment": "Use cautiously in severe hepatic disease.",
+    "monitoring": [
+      "Blood pressure",
+      "Fluid status",
+      "Serum electrolytes",
+      "Renal function"
+    ],
+    "sources": [
+      "FDA",
+      "DailyMed",
+      "PubMed"
+    ]
+  }
+]
