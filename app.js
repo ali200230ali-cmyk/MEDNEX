@@ -1,321 +1,796 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
+
+  // ==============================
+  // عناصر الصفحة
+  // ==============================
 
   const searchButton = document.getElementById("searchButton");
   const searchInput = document.getElementById("medicineSearch");
   const results = document.getElementById("results");
 
+  // ==============================
+  // قواعد البيانات
+  // ==============================
+
   let localMedicines = [];
-let products = [];
-let medicines = [];
-  /*
-   * ============================
-   * LOAD MEDNEX DATABASE
-   * ============================
-   */
+  let products = [];
+  let medicines = [];
 
-  async function loadLocalDatabase() {
+  let currentLocalResults = [];
+  let currentProductResults = [];
+  let currentFDAResults = [];
 
-  try {
-
-    const [medicineResponse, productsResponse] =
-      await Promise.all([
-        fetch("data/cardiovascular.json"),
-        fetch("data/products.json")
-      ]);
-
-    if (!medicineResponse.ok) {
-      throw new Error("Cardiovascular database loading error");
-    }
-
-    if (!productsResponse.ok) {
-      throw new Error("Products database loading error");
-    }
-
-    localMedicines =
-      await medicineResponse.json();
-
-    products =
-      await productsResponse.json();
-
-    console.log(
-      "MEDNEX medical database loaded:",
-      localMedicines.length
-    );
-
-    console.log(
-      "MEDNEX products database loaded:",
-      products.length
-    );
-
-  } catch (error) {
-
-    console.error(
-      "MEDNEX database error:",
-      error
-    );
-
-    localMedicines = [];
-    products = [];
-  }
-  }
-
-
-  /*
-   * ============================
-   * START
-   * ============================
-   */
-
-  loadLocalDatabase();
-
-
-  /*
-   * ============================
-   * MEDICINE SYNONYMS
-   * ============================
-   */
+  // ==============================
+  // مرادفات الأدوية
+  // ==============================
 
   const synonyms = {
 
-    "paracetamol": "acetaminophen",
-    "باراسيتامول": "acetaminophen",
-    "بانادول": "panadol",
-    "acetaminophen": "acetaminophen",
-    "panadol": "panadol",
+    paracetamol: [
+      "paracetamol",
+      "acetaminophen",
+      "panadol",
+      "باراسيتامول",
+      "بنادول",
+      "أسيتامينوفين",
+      "اسيتامينوفين"
+    ],
 
-    "اوميبرازول": "omeprazole",
-    "أوميبرازول": "omeprazole",
-    "omeprazole": "omeprazole",
+    omeprazole: [
+      "omeprazole",
+      "أوميبرازول",
+      "اوميبرازول"
+    ],
 
-    "ايبوبروفين": "ibuprofen",
-    "إيبوبروفين": "ibuprofen",
-    "ibuprofen": "ibuprofen",
+    ibuprofen: [
+      "ibuprofen",
+      "إيبوبروفين",
+      "ايبوبروفين"
+    ],
 
-    "اموكسيسيلين": "amoxicillin",
-    "أموكسيسيلين": "amoxicillin",
-    "amoxicillin": "amoxicillin",
+    amoxicillin: [
+      "amoxicillin",
+      "أموكسيسيلين",
+      "اموكسيسيلين"
+    ],
 
-    "املوديبين": "amlodipine",
-    "أملوديبين": "amlodipine",
-    "amlodipine": "amlodipine",
+    amlodipine: [
+      "amlodipine",
+      "أملوديبين",
+      "املوديبين"
+    ],
 
-    "ليسينوبريل": "lisinopril",
-    "ليزينوبريل": "lisinopril",
-    "lisinopril": "lisinopril",
+    lisinopril: [
+      "lisinopril",
+      "ليزينوبريل",
+      "ليسينوبريل"
+    ],
 
-    "لوسارتان": "losartan",
-    "losartan": "losartan",
+    losartan: [
+      "losartan",
+      "لوسارتان"
+    ],
 
-    "اتورفاستاتين": "atorvastatin",
-    "أتورفاستاتين": "atorvastatin",
-    "atorvastatin": "atorvastatin",
+    atorvastatin: [
+      "atorvastatin",
+      "أتورفاستاتين",
+      "اتورفاستاتين"
+    ],
 
-    "فوروسيميد": "furosemide",
-    "فوروسمايد": "furosemide",
-    "furosemide": "furosemide"
+    furosemide: [
+      "furosemide",
+      "فوروسيميد"
+    ]
   };
 
+  // ==============================
+  // تشغيل قواعد البيانات
+  // ==============================
 
-  /*
-   * ============================
-   * SEARCH BUTTON
-   * ============================
-   */
+  loadDatabases();
 
-  searchButton.addEventListener(
-    "click",
-    searchMedicine
-  );
+  async function loadDatabases() {
 
+    try {
 
-  searchInput.addEventListener(
-    "keydown",
-    function (event) {
+      const [medicineResponse, productsResponse] =
+        await Promise.all([
+          fetch("data/cardiovascular.json"),
+          fetch("data/products.json")
+        ]);
 
-      if (event.key === "Enter") {
-        searchMedicine();
+      if (!medicineResponse.ok) {
+        throw new Error(
+          "تعذر تحميل قاعدة بيانات الأدوية"
+        );
       }
 
+      if (!productsResponse.ok) {
+        throw new Error(
+          "تعذر تحميل قاعدة بيانات المنتجات"
+        );
+      }
+
+      localMedicines =
+        await medicineResponse.json();
+
+      products =
+        await productsResponse.json();
+
+      console.log(
+        "MEDNEX medical database:",
+        localMedicines.length
+      );
+
+      console.log(
+        "MEDNEX products database:",
+        products.length
+      );
+
+    } catch (error) {
+
+      console.error(
+        "MEDNEX database error:",
+        error
+      );
+
+      localMedicines = [];
+      products = [];
     }
-  );
+  }
 
+  // ==============================
+  // البحث
+  // ==============================
 
-  /*
-   * ============================
-   * SEARCH MEDICINE
-   * ============================
-   */
+  if (searchButton) {
+
+    searchButton.addEventListener(
+      "click",
+      searchMedicine
+    );
+  }
+
+  if (searchInput) {
+
+    searchInput.addEventListener(
+      "keydown",
+      (event) => {
+
+        if (event.key === "Enter") {
+          searchMedicine();
+        }
+
+      }
+    );
+  }
 
   async function searchMedicine() {
 
-    const searchTerm =
+    const term =
       searchInput.value.trim();
 
-    if (!searchTerm) {
+    if (!term) {
 
       results.innerHTML = `
-        <div class="medicine-card">
-          <p>اكتب اسم الدواء أولاً.</p>
+        <div class="info-box">
+          <strong>اكتب اسم الدواء أو المنتج أولاً.</strong>
         </div>
       `;
 
       return;
     }
 
-
     results.innerHTML = `
-      <div class="loading">
-        🔎 جاري البحث في قاعدة MEDNEX...
+      <div class="loading-box">
+        🔎 جاري البحث في MEDNEX...
       </div>
     `;
 
+    const normalizedTerm =
+      normalizeText(term);
 
-    const normalized =
-      searchTerm.toLowerCase();
+    // ==========================================
+    // 1. البحث أولاً في قاعدة منتجات MEDNEX
+    // ==========================================
 
-    const term =
-      synonyms[normalized] ||
-      normalized;
+    const productMatches =
+      searchProducts(normalizedTerm);
 
+    if (productMatches.length > 0) {
 
-    /*
-     * ============================
-     * SEARCH LOCAL DATABASE
-     * ============================
-     */
+      currentProductResults =
+        productMatches;
 
-    const localResults =
-      localMedicines.filter(
-        function (medicine) {
-
-          const generic =
-            (
-              medicine.genericName ||
-              ""
-            ).toLowerCase();
-
-          const arabic =
-            (
-              medicine.arabicName ||
-              ""
-            ).toLowerCase();
-
-          const className =
-            (
-              medicine.class ||
-              ""
-            ).toLowerCase();
-
-          const therapeutic =
-            (
-              medicine.therapeuticClass ||
-              ""
-            ).toLowerCase();
-
-
-          return (
-
-            generic.includes(term) ||
-
-            arabic.includes(searchTerm) ||
-
-            className.includes(term) ||
-
-            therapeutic.includes(term)
-
-          );
-
-        }
+      displayProductResults(
+        productMatches,
+        term
       );
-
-
-    /*
-     * LOCAL DATABASE RESULTS
-     */
-
-    if (localResults.length > 0) {
-
-      medicines =
-        localResults.map(
-          function (medicine) {
-
-            return {
-              type: "local",
-              data: medicine
-            };
-
-          }
-        );
-
-
-      displayLocalResults();
 
       return;
     }
 
+    // ==========================================
+    // 2. البحث في قاعدة الأدوية المحلية
+    // ==========================================
 
-    /*
-     * ============================
-     * IF NOT FOUND LOCALLY
-     * SEARCH FDA
-     * ============================
-     */
+    const localMatches =
+      searchLocalMedicines(normalizedTerm);
+
+    if (localMatches.length > 0) {
+
+      currentLocalResults =
+        localMatches;
+
+      displayLocalResults(
+        localMatches,
+        term
+      );
+
+      return;
+    }
+
+    // ==========================================
+    // 3. إذا لم نجد شيئاً → FDA
+    // ==========================================
 
     await searchFDA(term);
-
   }
 
+  // ==============================
+  // تطبيع النص
+  // ==============================
 
-  /*
-   * ============================
-   * DISPLAY LOCAL RESULTS
-   * ============================
-   */
+  function normalizeText(text) {
 
-  function displayLocalResults() {
+    return String(text || "")
+      .toLowerCase()
+      .trim()
+      .replace(/[أإآ]/g, "ا")
+      .replace(/ة/g, "ه")
+      .replace(/ى/g, "ي")
+      .replace(/\s+/g, " ");
+  }
 
-    results.innerHTML = `
+  // ==============================
+  // الحصول على المرادفات
+  // ==============================
+
+  function getSearchTerms(term) {
+
+    const normalized =
+      normalizeText(term);
+
+    let searchTerms = [normalized];
+
+    for (const key in synonyms) {
+
+      const group =
+        synonyms[key].map(
+          item => normalizeText(item)
+        );
+
+      if (group.includes(normalized)) {
+
+        searchTerms =
+          [...new Set([
+            ...searchTerms,
+            ...group
+          ])];
+
+        break;
+      }
+    }
+
+    return searchTerms;
+  }
+
+  // ==============================
+  // البحث في products.json
+  // ==============================
+
+  function searchProducts(term) {
+
+    const searchTerms =
+      getSearchTerms(term);
+
+    return products.filter(product => {
+
+      if (
+        product.active === false
+      ) {
+        return false;
+      }
+
+      const fields = [
+
+        product.name,
+        product.arabicName,
+        product.category,
+        product.subCategory,
+        product.strength,
+        product.dosageForm,
+        product.manufacturer,
+
+        ...(Array.isArray(product.tradeNames)
+          ? product.tradeNames
+          : [])
+
+      ];
+
+      return fields.some(field => {
+
+        const value =
+          normalizeText(field);
+
+        return searchTerms.some(
+          searchTerm =>
+            value.includes(searchTerm) ||
+            searchTerm.includes(value)
+        );
+
+      });
+
+    });
+  }
+
+  // ==============================
+  // عرض نتائج المنتجات
+  // ==============================
+
+  function displayProductResults(
+    productResults,
+    searchTerm
+  ) {
+
+    let html = `
 
       <div class="source-box">
 
-        <p>
-          🗂️ نتائج من قاعدة MEDNEX
-        </p>
+        <strong>MEDNEX</strong>
 
-        <p>
-          الجهاز: القلب والأوعية الدموية
-        </p>
+        <div>
+          منتجات مطابقة لبحث:
+          <strong>${escapeHTML(searchTerm)}</strong>
+        </div>
 
+        <small>
+          النتائج من قاعدة منتجات MEDNEX
+        </small>
+
+      </div>
+
+      <div class="results-count">
+        تم العثور على ${productResults.length} منتج
       </div>
 
     `;
 
+    productResults.forEach(
+      (product, index) => {
 
-    medicines.forEach(
-      function (item, index) {
+        const prescriptionText =
+          product.prescriptionRequired
+            ? "يحتاج وصفة طبية"
+            : "لا يحتاج وصفة طبية";
 
-        const medicine =
-          item.data;
-
-
-        results.innerHTML += `
+        html += `
 
           <div class="medicine-card">
 
             <h3>
-              💊
               ${escapeHTML(
-                medicine.genericName
+                product.arabicName ||
+                product.name ||
+                "منتج"
               )}
             </h3>
 
             <p>
               <strong>
-                الاسم بالعربي:
+                الاسم العلمي:
               </strong>
-
               ${escapeHTML(
-                medicine.arabicName
+                product.name || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>
+                التصنيف:
+              </strong>
+              ${escapeHTML(
+                product.category || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>
+                القسم:
+              </strong>
+              ${escapeHTML(
+                product.subCategory || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>
+                التركيز:
+              </strong>
+              ${escapeHTML(
+                product.strength || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>
+                الشكل الدوائي:
+              </strong>
+              ${escapeHTML(
+                product.dosageForm || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>
+                الوصفة:
+              </strong>
+              ${prescriptionText}
+            </p>
+
+            ${
+              product.manufacturer
+                ? `
+                  <p>
+                    <strong>
+                      الشركة:
+                    </strong>
+                    ${escapeHTML(
+                      product.manufacturer
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            <button
+              class="details-button"
+              onclick="showProductDetails(${index})"
+            >
+              عرض المنتج
+            </button>
+
+          </div>
+
+        `;
+      }
+    );
+
+    results.innerHTML = html;
+  }
+
+  // ==============================
+  // تفاصيل المنتج
+  // ==============================
+
+  window.showProductDetails =
+    function(index) {
+
+      const product =
+        currentProductResults[index];
+
+      if (!product) {
+        return;
+      }
+
+      const prescriptionText =
+        product.prescriptionRequired
+          ? "يحتاج وصفة طبية"
+          : "لا يحتاج وصفة طبية";
+
+      results.innerHTML = `
+
+        <button
+          class="back-button"
+          onclick="backToProductResults()"
+        >
+          ← العودة إلى النتائج
+        </button>
+
+        <div class="medicine-details">
+
+          <h2>
+            ${escapeHTML(
+              product.arabicName ||
+              product.name ||
+              "المنتج"
+            )}
+          </h2>
+
+          <div class="detail-section">
+
+            <h3>بيانات المنتج</h3>
+
+            <p>
+              <strong>الاسم العلمي:</strong>
+              ${escapeHTML(
+                product.name || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>الاسم العربي:</strong>
+              ${escapeHTML(
+                product.arabicName || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>التصنيف:</strong>
+              ${escapeHTML(
+                product.category || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>التصنيف الفرعي:</strong>
+              ${escapeHTML(
+                product.subCategory || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>التركيز:</strong>
+              ${escapeHTML(
+                product.strength || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>الشكل الدوائي:</strong>
+              ${escapeHTML(
+                product.dosageForm || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>الوصفة الطبية:</strong>
+              ${prescriptionText}
+            </p>
+
+            ${
+              product.manufacturer
+                ? `
+                  <p>
+                    <strong>الشركة المصنعة:</strong>
+                    ${escapeHTML(
+                      product.manufacturer
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            ${
+              Array.isArray(product.tradeNames) &&
+              product.tradeNames.length > 0
+                ? `
+                  <p>
+                    <strong>الأسماء التجارية:</strong>
+                    ${product.tradeNames
+                      .map(
+                        name =>
+                          escapeHTML(name)
+                      )
+                      .join("، ")}
+                  </p>
+                `
+                : ""
+            }
+
+          </div>
+
+          <div class="info-box">
+
+            <strong>
+              ملاحظة:
+            </strong>
+
+            <p>
+              بيانات المنتج الحالية جزء من
+              قاعدة MEDNEX التجريبية، ولا تعني
+              توفر المنتج حاليًا في صيدلية معينة.
+            </p>
+
+          </div>
+
+          <button
+            class="details-button"
+            onclick="searchMedicalInformation('${escapeJS(product.name || "")}')"
+          >
+            🩺 البحث عن المعلومات الدوائية
+          </button>
+
+        </div>
+
+      `;
+    };
+
+  // ==============================
+  // العودة إلى نتائج المنتجات
+  // ==============================
+
+  window.backToProductResults =
+    function() {
+
+      displayProductResults(
+        currentProductResults,
+        searchInput.value
+      );
+    };
+
+  // ==============================
+  // البحث عن المعلومات الطبية
+  // ==============================
+
+  window.searchMedicalInformation =
+    function(term) {
+
+      const normalized =
+        normalizeText(term);
+
+      const matches =
+        localMedicines.filter(
+          medicine => {
+
+            const fields = [
+
+              medicine.genericName,
+              medicine.arabicName,
+              medicine.class,
+              medicine.therapeuticClass
+
+            ];
+
+            return fields.some(
+              field =>
+                normalizeText(field)
+                  .includes(normalized)
+            );
+          }
+        );
+
+      if (matches.length > 0) {
+
+        currentLocalResults =
+          matches;
+
+        displayLocalResults(
+          matches,
+          term
+        );
+
+        return;
+      }
+
+      results.innerHTML = `
+
+        <button
+          class="back-button"
+          onclick="backToProductResults()"
+        >
+          ← العودة إلى المنتج
+        </button>
+
+        <div class="info-box">
+
+          <h3>
+            لم نجد معلومات دوائية محلية
+          </h3>
+
+          <p>
+            سيتم البحث في FDA عن:
+            <strong>
+              ${escapeHTML(term)}
+            </strong>
+          </p>
+
+        </div>
+
+      `;
+
+      searchFDA(term);
+    };
+
+  // ==============================
+  // البحث في قاعدة القلب والأوعية
+  // ==============================
+
+  function searchLocalMedicines(term) {
+
+    const searchTerms =
+      getSearchTerms(term);
+
+    return localMedicines.filter(
+      medicine => {
+
+        const fields = [
+
+          medicine.genericName,
+          medicine.arabicName,
+          medicine.class,
+          medicine.therapeuticClass
+
+        ];
+
+        return fields.some(field => {
+
+          const value =
+            normalizeText(field);
+
+          return searchTerms.some(
+            searchTerm =>
+              value.includes(searchTerm)
+          );
+
+        });
+
+      }
+    );
+  }
+
+  // ==============================
+  // عرض نتائج قاعدة الأدوية
+  // ==============================
+
+  function displayLocalResults(
+    medicineResults,
+    searchTerm
+  ) {
+
+    let html = `
+
+      <div class="source-box">
+
+        <strong>MEDNEX</strong>
+
+        <div>
+          نتائج قاعدة المعلومات الدوائية
+        </div>
+
+        <small>
+          الجهاز: القلب والأوعية الدموية
+        </small>
+
+      </div>
+
+      <div class="results-count">
+        تم العثور على ${medicineResults.length} نتيجة
+      </div>
+
+    `;
+
+    medicineResults.forEach(
+      (medicine, index) => {
+
+        html += `
+
+          <div class="medicine-card">
+
+            <h3>
+              ${escapeHTML(
+                medicine.arabicName ||
+                medicine.genericName ||
+                "-"
+              )}
+            </h3>
+
+            <p>
+              <strong>
+                الاسم العلمي:
+              </strong>
+              ${escapeHTML(
+                medicine.genericName || "-"
               )}
             </p>
 
@@ -323,9 +798,8 @@ let medicines = [];
               <strong>
                 الفئة الدوائية:
               </strong>
-
               ${escapeHTML(
-                medicine.class
+                medicine.class || "-"
               )}
             </p>
 
@@ -333,9 +807,8 @@ let medicines = [];
               <strong>
                 الفئة العلاجية:
               </strong>
-
               ${escapeHTML(
-                medicine.therapeuticClass
+                medicine.therapeuticClass || "-"
               )}
             </p>
 
@@ -343,17 +816,13 @@ let medicines = [];
               <strong>
                 الأشكال الدوائية:
               </strong>
-
-              ${escapeHTML(
-                Array.isArray(
-                  medicine.dosageForms
-                )
-                  ? medicine.dosageForms.join("، ")
-                  : medicine.dosageForms || ""
+              ${formatArray(
+                medicine.dosageForms
               )}
             </p>
 
             <button
+              class="details-button"
               onclick="showLocalMedicineDetails(${index})"
             >
               عرض التفاصيل
@@ -362,374 +831,324 @@ let medicines = [];
           </div>
 
         `;
-
       }
     );
 
+    results.innerHTML = html;
   }
 
-
-  /*
-   * ============================
-   * LOCAL MEDICINE DETAILS
-   * ============================
-   */
+  // ==============================
+  // تفاصيل الدواء المحلي
+  // ==============================
 
   window.showLocalMedicineDetails =
-    function (index) {
+    function(index) {
 
-      const item =
-        medicines[index];
+      const medicine =
+        currentLocalResults[index];
 
-      if (!item || item.type !== "local") {
+      if (!medicine) {
         return;
       }
 
-      const medicine =
-        item.data;
-
-
       results.innerHTML = `
 
-        <div class="medicine-card">
+        <button
+          class="back-button"
+          onclick="backToResults()"
+        >
+          ← العودة إلى النتائج
+        </button>
 
-          <button
-            onclick="backToResults()"
-          >
-            ← رجوع إلى النتائج
-          </button>
+        <div class="medicine-details">
 
           <h2>
-            💊
             ${escapeHTML(
-              medicine.genericName
+              medicine.arabicName ||
+              medicine.genericName ||
+              "-"
             )}
           </h2>
 
-          <p>
-            <strong>
-              الاسم العربي:
-            </strong>
+          <div class="detail-section">
 
-            ${escapeHTML(
-              medicine.arabicName
-            )}
-          </p>
-
-
-          <hr>
-
-
-          <h3>
-            🧬 التصنيف الدوائي
-          </h3>
-
-          <p>
-            <strong>
-              الفئة الدوائية:
-            </strong>
-
-            ${escapeHTML(
-              medicine.class
-            )}
-          </p>
-
-          <p>
-            <strong>
-              الفئة العلاجية:
-            </strong>
-
-            ${escapeHTML(
-              medicine.therapeuticClass
-            )}
-          </p>
-
-
-          <h3>
-            💊 القوة
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              Array.isArray(
-                medicine.strengths
-              )
-                ? medicine.strengths.join("، ")
-                : medicine.strengths || ""
-            )}
-          </p>
-
-
-          <h3>
-            📦 الشكل الصيدلاني
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              Array.isArray(
-                medicine.dosageForms
-              )
-                ? medicine.dosageForms.join("، ")
-                : medicine.dosageForms || ""
-            )}
-          </p>
-
-
-          <h3>
-            🎯 الاستخدامات
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              Array.isArray(
-                medicine.indications
-              )
-                ? medicine.indications.join("، ")
-                : medicine.indications || ""
-            )}
-          </p>
-
-
-          <h3>
-            ⚙️ آلية العمل
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              medicine.mechanism
-            )}
-          </p>
-
-
-          <h3>
-            🚫 موانع الاستعمال
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              Array.isArray(
-                medicine.contraindications
-              )
-                ? medicine.contraindications.join("، ")
-                : medicine.contraindications || ""
-            )}
-          </p>
-
-
-          <h3>
-            ⚠️ التحذيرات
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              Array.isArray(
-                medicine.warnings
-              )
-                ? medicine.warnings.join("، ")
-                : medicine.warnings || ""
-            )}
-          </p>
-
-
-          <h3>
-            💥 الآثار الجانبية
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              Array.isArray(
-                medicine.adverseEffects
-              )
-                ? medicine.adverseEffects.join("، ")
-                : medicine.adverseEffects || ""
-            )}
-          </p>
-
-
-          <h3>
-            📋 الجرعة
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              medicine.dosage
-            )}
-          </p>
-
-
-          <h3>
-            🧪 تعديل الجرعة في أمراض الكلى
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              medicine.renalAdjustment
-            )}
-          </p>
-
-
-          <h3>
-            🧪 تعديل الجرعة في أمراض الكبد
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              medicine.hepaticAdjustment
-            )}
-          </p>
-
-
-          <h3>
-            🔄 التداخلات الدوائية
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              Array.isArray(
-                medicine.interactions
-              )
-                ? medicine.interactions.join("، ")
-                : medicine.interactions || ""
-            )}
-          </p>
-
-
-          <h3>
-            🤰 الحمل والرضاعة
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              medicine.pregnancy
-            )}
-          </p>
-
-
-          <h3>
-            🩺 المتابعة
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              Array.isArray(
-                medicine.monitoring
-              )
-                ? medicine.monitoring.join("، ")
-                : medicine.monitoring || ""
-            )}
-          </p>
-
-
-          <div class="source-box">
-
-            <h3>
-              📚 المصادر
-            </h3>
+            <h3>المعلومات الأساسية</h3>
 
             <p>
+              <strong>الاسم العلمي:</strong>
               ${escapeHTML(
-                Array.isArray(
-                  medicine.sources
-                )
-                  ? medicine.sources.join("، ")
-                  : medicine.sources || ""
+                medicine.genericName || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>الاسم العربي:</strong>
+              ${escapeHTML(
+                medicine.arabicName || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>الفئة الدوائية:</strong>
+              ${escapeHTML(
+                medicine.class || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>الفئة العلاجية:</strong>
+              ${escapeHTML(
+                medicine.therapeuticClass || "-"
               )}
             </p>
 
           </div>
 
+          <div class="detail-section">
 
-          <div
-            id="pubmedResearch"
-            class="source-box"
-          >
+            <h3>دواعي الاستعمال</h3>
 
             <p>
-              🔬 جاري البحث عن أحدث الدراسات...
+              ${formatValue(
+                medicine.indications
+              )}
             </p>
 
           </div>
+
+          <div class="detail-section">
+
+            <h3>آلية العمل</h3>
+
+            <p>
+              ${formatValue(
+                medicine.mechanism
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>التركيزات</h3>
+
+            <p>
+              ${formatArray(
+                medicine.strengths
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>الأشكال الدوائية</h3>
+
+            <p>
+              ${formatArray(
+                medicine.dosageForms
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>موانع الاستعمال</h3>
+
+            <p>
+              ${formatValue(
+                medicine.contraindications
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>التحذيرات</h3>
+
+            <p>
+              ${formatValue(
+                medicine.warnings
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>الآثار الجانبية</h3>
+
+            <p>
+              ${formatValue(
+                medicine.adverseEffects
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>الجرعات</h3>
+
+            <p>
+              ${formatValue(
+                medicine.dosage
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>تعديل الجرعة في القصور الكلوي</h3>
+
+            <p>
+              ${formatValue(
+                medicine.renalAdjustment
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>تعديل الجرعة في القصور الكبدي</h3>
+
+            <p>
+              ${formatValue(
+                medicine.hepaticAdjustment
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>التداخلات الدوائية</h3>
+
+            <p>
+              ${formatValue(
+                medicine.interactions
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>الحمل</h3>
+
+            <p>
+              ${formatValue(
+                medicine.pregnancy
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>المتابعة والمراقبة</h3>
+
+            <p>
+              ${formatValue(
+                medicine.monitoring
+              )}
+            </p>
+
+          </div>
+
+          <div class="detail-section">
+
+            <h3>المصادر</h3>
+
+            <p>
+              ${formatValue(
+                medicine.sources
+              )}
+            </p>
+
+          </div>
+
+          <div id="pubmedResearch"></div>
 
         </div>
 
       `;
 
-
       loadPubMedResearch(
         medicine.genericName
       );
-
     };
 
-
-  /*
-   * ============================
-   * BACK TO RESULTS
-   * ============================
-   */
+  // ==============================
+  // العودة إلى نتائج قاعدة الأدوية
+  // ==============================
 
   window.backToResults =
-    function () {
+    function() {
 
-      displayLocalResults();
-
+      displayLocalResults(
+        currentLocalResults,
+        searchInput.value
+      );
     };
 
-
-  /*
-   * ============================
-   * FDA SEARCH
-   * ============================
-   */
+  // ==============================
+  // FDA
+  // ==============================
 
   async function searchFDA(term) {
 
     try {
 
       const url =
-        "https://api.fda.gov/drug/label.json?search=" +
+        "https://api.fda.gov/drug/label.json" +
+        "?search=" +
         encodeURIComponent(
-          'openfda.brand_name:"' +
-          term +
-          '" OR openfda.generic_name:"' +
-          term +
-          '"'
+          `(openfda.generic_name:${term}` +
+          ` OR openfda.brand_name:${term})`
         ) +
         "&limit=10";
-
 
       const response =
         await fetch(url);
 
-
       if (!response.ok) {
         throw new Error(
-          "FDA API error"
+          "FDA search failed"
         );
       }
-
 
       const data =
         await response.json();
 
-
-      const fdaResults =
-        data.results || [];
-
-
-      if (fdaResults.length === 0) {
+      if (
+        !data.results ||
+        data.results.length === 0
+      ) {
 
         results.innerHTML = `
 
-          <div class="medicine-card">
+          <div class="info-box">
+
+            <h3>
+              لم يتم العثور على نتائج
+            </h3>
 
             <p>
-              ❌ لم يتم العثور على الدواء.
+              لم نجد معلومات مطابقة لـ:
+              <strong>
+                ${escapeHTML(term)}
+              </strong>
             </p>
 
-            <p>
-              جرّب الاسم العلمي أو التجاري.
-            </p>
+            <small>
+              جرّب الاسم العلمي أو الاسم التجاري
+              باللغة الإنجليزية.
+            </small>
 
           </div>
 
@@ -738,86 +1157,13 @@ let medicines = [];
         return;
       }
 
+      currentFDAResults =
+        data.results;
 
-      medicines =
-        fdaResults.map(
-          function (medicine) {
-
-            return {
-              type: "fda",
-              data: medicine
-            };
-
-          }
-        );
-
-
-      results.innerHTML =
-        medicines.map(
-          function (item, index) {
-
-            const medicine =
-              item.data;
-
-
-            const brand =
-              medicine.openfda?.brand_name?.[0] ||
-              "غير معروف";
-
-
-            const generic =
-              medicine.openfda?.generic_name?.[0] ||
-              "غير معروف";
-
-
-            const manufacturer =
-              medicine.openfda?.manufacturer_name?.[0] ||
-              "غير معروف";
-
-
-            return `
-
-              <div class="medicine-card">
-
-                <h3>
-                  ${escapeHTML(
-                    brand
-                  )}
-                </h3>
-
-                <p>
-                  <strong>
-                    المادة الفعالة:
-                  </strong>
-
-                  ${escapeHTML(
-                    generic
-                  )}
-                </p>
-
-                <p>
-                  <strong>
-                    الشركة:
-                  </strong>
-
-                  ${escapeHTML(
-                    manufacturer
-                  )}
-                </p>
-
-                <button
-                  onclick="showMedicineDetails(${index})"
-                >
-                  عرض التفاصيل
-                </button>
-
-              </div>
-
-            `;
-
-          }
-        ).join("");
-
+      displayFDAResults(
+        data.results,
+        term
+      );
 
     } catch (error) {
 
@@ -826,237 +1172,264 @@ let medicines = [];
         error
       );
 
-
       results.innerHTML = `
 
-        <div class="medicine-card">
+        <div class="info-box">
+
+          <h3>
+            تعذر إتمام البحث
+          </h3>
 
           <p>
-            ⚠️ تعذر الاتصال بمصدر FDA.
+            حدث خطأ أثناء الاتصال بمصدر FDA.
           </p>
 
           <p>
-            حاول مرة أخرى بعد قليل.
+            حاول مرة أخرى لاحقًا.
           </p>
 
         </div>
 
       `;
-
     }
-
   }
 
+  // ==============================
+  // عرض نتائج FDA
+  // ==============================
 
-  /*
-   * ============================
-   * FDA DETAILS
-   * ============================
-   */
+  function displayFDAResults(
+    fdaResults,
+    searchTerm
+  ) {
+
+    let html = `
+
+      <div class="source-box">
+
+        <strong>
+          FDA / openFDA
+        </strong>
+
+        <div>
+          نتائج البحث عن:
+          <strong>
+            ${escapeHTML(searchTerm)}
+          </strong>
+        </div>
+
+      </div>
+
+    `;
+
+    fdaResults.forEach(
+      (medicine, index) => {
+
+        const openfda =
+          medicine.openfda || {};
+
+        const brand =
+          firstValue(
+            openfda.brand_name
+          );
+
+        const generic =
+          firstValue(
+            openfda.generic_name
+          );
+
+        const manufacturer =
+          firstValue(
+            openfda.manufacturer_name
+          );
+
+        html += `
+
+          <div class="medicine-card">
+
+            <h3>
+              ${escapeHTML(
+                brand ||
+                generic ||
+                "دواء"
+              )}
+            </h3>
+
+            <p>
+              <strong>
+                الاسم العلمي:
+              </strong>
+              ${escapeHTML(
+                generic || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>
+                الشركة:
+              </strong>
+              ${escapeHTML(
+                manufacturer || "-"
+              )}
+            </p>
+
+            <button
+              class="details-button"
+              onclick="showMedicineDetails(${index})"
+            >
+              عرض التفاصيل
+            </button>
+
+          </div>
+
+        `;
+      }
+    );
+
+    results.innerHTML = html;
+  }
+
+  // ==============================
+  // تفاصيل FDA
+  // ==============================
 
   window.showMedicineDetails =
-    function (index) {
+    function(index) {
 
-      const item =
-        medicines[index];
+      const medicine =
+        currentFDAResults[index];
 
-
-      if (!item || item.type !== "fda") {
+      if (!medicine) {
         return;
       }
 
-
-      const medicine =
-        item.data;
-
+      const openfda =
+        medicine.openfda || {};
 
       const brand =
-        medicine.openfda?.brand_name?.[0] ||
-        "غير معروف";
-
+        firstValue(
+          openfda.brand_name
+        );
 
       const generic =
-        medicine.openfda?.generic_name?.[0] ||
-        "غير معروف";
-
+        firstValue(
+          openfda.generic_name
+        );
 
       const manufacturer =
-        medicine.openfda?.manufacturer_name?.[0] ||
-        "غير معروف";
-
-
-      const purpose =
-        medicine.purpose?.[0] ||
-        medicine.indications_and_usage?.[0] ||
-        "لا توجد معلومات متاحة.";
-
-
-      const warnings =
-        medicine.warnings?.[0] ||
-        "لا توجد معلومات متاحة.";
-
-
-      const adverse =
-        medicine.adverse_reactions?.[0] ||
-        "لا توجد معلومات متاحة.";
-
-
-      const contraindications =
-        medicine.contraindications?.[0] ||
-        "لا توجد معلومات متاحة.";
-
-
-      const dosage =
-        medicine.dosage_and_administration?.[0] ||
-        "لا توجد معلومات متاحة.";
-
-
-      const interactions =
-        medicine.drug_interactions?.[0] ||
-        "لا توجد معلومات متاحة.";
-
+        firstValue(
+          openfda.manufacturer_name
+        );
 
       results.innerHTML = `
 
-        <div class="medicine-card">
+        <button
+          class="back-button"
+          onclick="backToFDAResults()"
+        >
+          ← العودة إلى النتائج
+        </button>
 
-          <button
-            onclick="backToFDAResults()"
-          >
-            ← رجوع
-          </button>
+        <div class="medicine-details">
 
           <h2>
-            ${escapeHTML(brand)}
+            ${escapeHTML(
+              brand ||
+              generic ||
+              "دواء"
+            )}
           </h2>
 
-          <p>
-            <strong>
-              المادة الفعالة:
-            </strong>
+          <div class="detail-section">
 
-            ${escapeHTML(generic)}
-          </p>
-
-          <p>
-            <strong>
-              الشركة المصنعة:
-            </strong>
-
-            ${escapeHTML(manufacturer)}
-          </p>
-
-
-          <hr>
-
-
-          <h3>
-            💊 الاستخدامات
-          </h3>
-
-          <p>
-            ${escapeHTML(purpose)}
-          </p>
-
-
-          <h3>
-            ⚠️ التحذيرات
-          </h3>
-
-          <p>
-            ${escapeHTML(warnings)}
-          </p>
-
-
-          <h3>
-            🚫 موانع الاستعمال
-          </h3>
-
-          <p>
-            ${escapeHTML(contraindications)}
-          </p>
-
-
-          <h3>
-            💥 الآثار الجانبية
-          </h3>
-
-          <p>
-            ${escapeHTML(adverse)}
-          </p>
-
-
-          <h3>
-            📋 الجرعة وطريقة الاستخدام
-          </h3>
-
-          <p>
-            ${escapeHTML(dosage)}
-          </p>
-
-
-          <h3>
-            🔄 التداخلات الدوائية
-          </h3>
-
-          <p>
-            ${escapeHTML(interactions)}
-          </p>
-
-
-          <div
-            id="pubmedResearch"
-            class="source-box"
-          >
+            <h3>المعلومات الأساسية</h3>
 
             <p>
-              🔬 جاري تحليل الأدلة العلمية...
+              <strong>
+                الاسم التجاري:
+              </strong>
+              ${escapeHTML(
+                brand || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>
+                الاسم العلمي:
+              </strong>
+              ${escapeHTML(
+                generic || "-"
+              )}
+            </p>
+
+            <p>
+              <strong>
+                الشركة المصنعة:
+              </strong>
+              ${escapeHTML(
+                manufacturer || "-"
+              )}
             </p>
 
           </div>
 
+          ${createFDASection(
+            "الغرض والاستعمال",
+            medicine.purpose
+          )}
 
-          <div class="source-box">
+          ${createFDASection(
+            "التحذيرات",
+            medicine.warnings
+          )}
 
-            <p>
-              📚 مصدر معلومات الدواء:
-              U.S. FDA / openFDA
-            </p>
+          ${createFDASection(
+            "موانع الاستعمال",
+            medicine.contraindications
+          )}
 
-            <p>
-              🔬 مصدر الأبحاث:
-              PubMed / NCBI
-            </p>
+          ${createFDASection(
+            "الآثار الجانبية",
+            medicine.adverse_reactions
+          )}
 
-          </div>
+          ${createFDASection(
+            "الجرعات وطريقة الاستعمال",
+            medicine.dosage_and_administration
+          )}
+
+          ${createFDASection(
+            "التداخلات الدوائية",
+            medicine.drug_interactions
+          )}
+
+          <div id="pubmedResearch"></div>
 
         </div>
 
       `;
 
-
       loadPubMedResearch(
-        generic
+        generic || brand
       );
-
     };
 
+  // ==============================
+  // العودة من FDA
+  // ==============================
 
   window.backToFDAResults =
-    function () {
+    function() {
 
-      searchFDA(
-        searchInput.value.trim()
+      displayFDAResults(
+        currentFDAResults,
+        searchInput.value
       );
-
     };
 
-
-  /*
-   * ============================
-   * PUBMED
-   * ============================
-   */
+  // ==============================
+  // PubMed
+  // ==============================
 
   async function loadPubMedResearch(term) {
 
@@ -1065,130 +1438,101 @@ let medicines = [];
         "pubmedResearch"
       );
 
-
-    if (!container) {
+    if (!container || !term) {
       return;
     }
 
+    container.innerHTML = `
+
+      <div class="research-box">
+
+        <h3>
+          🔬 أحدث الأبحاث من PubMed
+        </h3>
+
+        <p>
+          جاري البحث في الأدبيات العلمية...
+        </p>
+
+      </div>
+
+    `;
 
     try {
 
-      const cleanTerm =
-        term
-          .replace(/\[[^\]]*\]/g, "")
-          .trim();
-
-
-      const searchQuery =
-        '("' +
-        cleanTerm +
-        '"[Title/Abstract]) AND (' +
-
-        'clinical trial[pt] OR ' +
-        'randomized controlled trial[pt] OR ' +
-        'systematic review[pt] OR ' +
-        'meta-analysis[pt] OR ' +
-        'review[pt] OR ' +
-        'observational study[pt]' +
-
-        ')';
-
-
       const searchUrl =
         "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi" +
-
         "?db=pubmed" +
-
         "&term=" +
-        encodeURIComponent(
-          searchQuery
-        ) +
-
+        encodeURIComponent(term) +
         "&retmode=json" +
-
-        "&retmax=12" +
-
+        "&retmax=20" +
         "&sort=date";
 
-
       const searchResponse =
-        await fetch(
-          searchUrl
-        );
-
+        await fetch(searchUrl);
 
       if (!searchResponse.ok) {
         throw new Error(
-          "PubMed search error"
+          "PubMed search failed"
         );
       }
-
 
       const searchData =
         await searchResponse.json();
 
-
       const ids =
-        searchData.esearchresult?.idlist ||
-        [];
-
+        searchData.esearchresult?.idlist || [];
 
       if (ids.length === 0) {
 
         container.innerHTML = `
 
-          <h3>
-            🔬 الأبحاث العلمية
-          </h3>
+          <div class="research-box">
 
-          <p>
-            لم يتم العثور على أبحاث مناسبة.
-          </p>
+            <h3>
+              🔬 PubMed
+            </h3>
+
+            <p>
+              لم يتم العثور على دراسات
+              مطابقة حاليًا.
+            </p>
+
+          </div>
 
         `;
 
         return;
       }
 
-
       const fetchUrl =
         "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi" +
-
         "?db=pubmed" +
-
         "&id=" +
         ids.join(",") +
-
         "&retmode=xml";
 
-
       const fetchResponse =
-        await fetch(
-          fetchUrl
-        );
-
+        await fetch(fetchUrl);
 
       if (!fetchResponse.ok) {
         throw new Error(
-          "PubMed fetch error"
+          "PubMed fetch failed"
         );
       }
-
 
       const xmlText =
         await fetchResponse.text();
 
-
       const parser =
         new DOMParser();
-
 
       const xml =
         parser.parseFromString(
           xmlText,
           "text/xml"
         );
-
 
       const articles =
         Array.from(
@@ -1197,233 +1541,83 @@ let medicines = [];
           )
         );
 
+      const research = [];
 
-      const articleData =
-        articles.map(
-          function (article) {
+      articles.forEach(article => {
 
-            const pmid =
-              article.querySelector(
-                "PMID"
-              )?.textContent || "";
+        const title =
+          article.querySelector(
+            "ArticleTitle"
+          )?.textContent || "";
 
+        const abstractNodes =
+          Array.from(
+            article.querySelectorAll(
+              "AbstractText"
+            )
+          );
 
-            const title =
-              article.querySelector(
-                "ArticleTitle"
-              )?.textContent ||
-              "بدون عنوان";
+        const abstract =
+          abstractNodes
+            .map(node =>
+              node.textContent
+            )
+            .join(" ");
 
+        const journal =
+          article.querySelector(
+            "Journal Title"
+          )?.textContent || "";
 
-            const journal =
-              article.querySelector(
-                "Journal Title"
-              )?.textContent ||
-              "مجلة غير معروفة";
+        const year =
+          getPublicationYear(
+            article
+          );
 
+        const pmid =
+          article.querySelector(
+            "PMID"
+          )?.textContent || "";
 
-            const year =
-              article.querySelector(
-                "PubDate Year"
-              )?.textContent ||
-              "";
+        const publicationTypes =
+          Array.from(
+            article.querySelectorAll(
+              "PublicationType"
+            )
+          ).map(
+            node =>
+              node.textContent
+          );
 
+        const studyType =
+          detectStudyType(
+            publicationTypes,
+            title,
+            abstract
+          );
 
-            const abstract =
-              Array.from(
-                article.querySelectorAll(
-                  "AbstractText"
-                )
-              )
-              .map(
-                function (item) {
-                  return item.textContent;
-                }
-              )
-              .join(" ") ||
-              "لا يوجد ملخص متاح.";
+        research.push({
 
+          title,
+          abstract,
+          journal,
+          year,
+          pmid,
+          studyType
 
-            const publicationTypes =
-              Array.from(
-                article.querySelectorAll(
-                  "PublicationType"
-                )
-              )
-              .map(
-                function (item) {
-                  return item.textContent;
-                }
-              );
+        });
+      });
 
+      research.sort(
+        (a, b) =>
+          Number(b.year || 0) -
+          Number(a.year || 0)
+      );
 
-            let studyType =
-              "📄 دراسة علمية";
-
-
-            if (
-              publicationTypes.includes(
-                "Meta-Analysis"
-              )
-            ) {
-
-              studyType =
-                "📊 تحليل تلوي";
-
-            } else if (
-              publicationTypes.includes(
-                "Systematic Review"
-              )
-            ) {
-
-              studyType =
-                "📚 مراجعة منهجية";
-
-            } else if (
-              publicationTypes.includes(
-                "Randomized Controlled Trial"
-              )
-            ) {
-
-              studyType =
-                "🩺 تجربة سريرية عشوائية";
-
-            } else if (
-              publicationTypes.includes(
-                "Clinical Trial"
-              )
-            ) {
-
-              studyType =
-                "🩺 تجربة سريرية";
-
-            } else if (
-              publicationTypes.includes(
-                "Observational Study"
-              )
-            ) {
-
-              studyType =
-                "📊 دراسة رصدية";
-
-            } else if (
-              publicationTypes.includes(
-                "Review"
-              )
-            ) {
-
-              studyType =
-                "📚 مراجعة علمية";
-
-            }
-
-
-            return {
-
-              pmid,
-              title,
-              journal,
-              year,
-              abstract,
-              studyType
-
-            };
-
-          }
-        );
-
-
-      let html = `
-
-        <h3>
-          🔬 أحدث الأبحاث العلمية
-        </h3>
-
-        <p>
-          نتائج من PubMed / NCBI
-        </p>
-
-      `;
-
-
-      articleData
-        .slice(0, 8)
-        .forEach(
-          function (article) {
-
-            html += `
-
-              <div class="research-card">
-
-                <h4>
-                  ${escapeHTML(
-                    article.title
-                  )}
-                </h4>
-
-                <p>
-                  <strong>
-                    نوع الدراسة:
-                  </strong>
-
-                  ${article.studyType}
-                </p>
-
-                <p>
-                  <strong>
-                    المجلة:
-                  </strong>
-
-                  ${escapeHTML(
-                    article.journal
-                  )}
-                </p>
-
-                <p>
-                  <strong>
-                    السنة:
-                  </strong>
-
-                  ${escapeHTML(
-                    article.year
-                  )}
-                </p>
-
-                <p>
-                  ${escapeHTML(
-                    article.abstract.substring(
-                      0,
-                      500
-                    )
-                  )}
-                  ${
-                    article.abstract.length > 500
-                      ? "..."
-                      : ""
-                  }
-                </p>
-
-                <a
-                  href="https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(
-                    article.pmid
-                  )}/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  قراءة الدراسة على PubMed
-                </a>
-
-              </div>
-
-            `;
-
-          }
-        );
-
-
-      container.innerHTML =
-        html;
-
+      displayPubMedResearch(
+        research.slice(0, 8),
+        term
+      );
 
     } catch (error) {
 
@@ -1432,69 +1626,424 @@ let medicines = [];
         error
       );
 
+      container.innerHTML = `
+
+        <div class="research-box">
+
+          <h3>
+            🔬 PubMed
+          </h3>
+
+          <p>
+            تعذر تحميل الأبحاث حاليًا.
+          </p>
+
+        </div>
+
+      `;
+    }
+  }
+
+  // ==============================
+  // تحديد نوع الدراسة
+  // ==============================
+
+  function detectStudyType(
+    publicationTypes,
+    title,
+    abstract
+  ) {
+
+    const text =
+      (
+        publicationTypes.join(" ") +
+        " " +
+        title +
+        " " +
+        abstract
+      ).toLowerCase();
+
+    if (
+      text.includes(
+        "systematic review"
+      )
+    ) {
+      return "Systematic Review";
+    }
+
+    if (
+      text.includes(
+        "meta-analysis"
+      ) ||
+      text.includes(
+        "meta analysis"
+      )
+    ) {
+      return "Meta-analysis";
+    }
+
+    if (
+      text.includes(
+        "randomized controlled trial"
+      ) ||
+      text.includes(
+        "randomised controlled trial"
+      ) ||
+      text.includes("clinical trial")
+    ) {
+      return "Clinical Trial / RCT";
+    }
+
+    if (
+      text.includes(
+        "observational"
+      ) ||
+      text.includes(
+        "cohort"
+      ) ||
+      text.includes(
+        "case-control"
+      )
+    ) {
+      return "Observational Study";
+    }
+
+    if (
+      text.includes("review")
+    ) {
+      return "Review";
+    }
+
+    return "Research Article";
+  }
+
+  // ==============================
+  // عرض أبحاث PubMed
+  // ==============================
+
+  function displayPubMedResearch(
+    research,
+    term
+  ) {
+
+    const container =
+      document.getElementById(
+        "pubmedResearch"
+      );
+
+    if (!container) {
+      return;
+    }
+
+    if (research.length === 0) {
 
       container.innerHTML = `
 
-        <h3>
-          🔬 الأبحاث العلمية
-        </h3>
+        <div class="research-box">
 
-        <p>
-          ⚠️ تعذر تحميل الأبحاث حاليًا.
-        </p>
+          <h3>
+            🔬 أحدث الأبحاث
+          </h3>
+
+          <p>
+            لم يتم العثور على دراسات مناسبة.
+          </p>
+
+        </div>
 
       `;
 
+      return;
     }
 
+    let html = `
+
+      <div class="research-box">
+
+        <h3>
+          🔬 أحدث الأبحاث من PubMed
+        </h3>
+
+        <p>
+          نتائج بحث مرتبطة بـ:
+          <strong>
+            ${escapeHTML(term)}
+          </strong>
+        </p>
+
+        <small>
+          المصدر: PubMed / NCBI
+        </small>
+
+      </div>
+
+    `;
+
+    research.forEach(article => {
+
+      const abstract =
+        article.abstract
+          ? article.abstract.length > 500
+            ? article.abstract.substring(
+                0,
+                500
+              ) + "..."
+            : article.abstract
+          : "الملخص غير متوفر.";
+
+      html += `
+
+        <div class="research-card">
+
+          <h4>
+            ${escapeHTML(
+              article.title ||
+              "بدون عنوان"
+            )}
+          </h4>
+
+          <p>
+            <strong>
+              نوع الدراسة:
+            </strong>
+            ${escapeHTML(
+              article.studyType
+            )}
+          </p>
+
+          <p>
+            <strong>
+              المجلة:
+            </strong>
+            ${escapeHTML(
+              article.journal ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            <strong>
+              السنة:
+            </strong>
+            ${escapeHTML(
+              article.year ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            ${escapeHTML(
+              abstract
+            )}
+          </p>
+
+          ${
+            article.pmid
+              ? `
+                <a
+                  href="https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(article.pmid)}/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="pubmed-link"
+                >
+                  فتح الدراسة على PubMed
+                </a>
+              `
+              : ""
+          }
+
+        </div>
+
+      `;
+    });
+
+    container.innerHTML =
+      html;
   }
 
+  // ==============================
+  // استخراج سنة النشر
+  // ==============================
 
-  /*
-   * ============================
-   * SECURITY
-   * ============================
-   */
+  function getPublicationYear(article) {
+
+    const yearNode =
+      article.querySelector(
+        "PubDate Year"
+      );
+
+    if (yearNode) {
+      return yearNode.textContent;
+    }
+
+    const medlineDate =
+      article.querySelector(
+        "PubDate MedlineDate"
+      )?.textContent || "";
+
+    const match =
+      medlineDate.match(
+        /\b(19|20)\d{2}\b/
+      );
+
+    return match
+      ? match[0]
+      : "";
+  }
+
+  // ==============================
+  // إنشاء قسم FDA
+  // ==============================
+
+  function createFDASection(
+    title,
+    value
+  ) {
+
+    if (!value) {
+      return "";
+    }
+
+    return `
+
+      <div class="detail-section">
+
+        <h3>
+          ${escapeHTML(title)}
+        </h3>
+
+        <p>
+          ${formatValue(value)}
+        </p>
+
+      </div>
+
+    `;
+  }
+
+  // ==============================
+  // تنسيق البيانات
+  // ==============================
+
+  function formatValue(value) {
+
+    if (
+      value === undefined ||
+      value === null ||
+      value === ""
+    ) {
+      return "غير متوفر";
+    }
+
+    if (Array.isArray(value)) {
+
+      if (value.length === 0) {
+        return "غير متوفر";
+      }
+
+      return value
+        .map(item =>
+          escapeHTML(item)
+        )
+        .join("<br>");
+    }
+
+    return escapeHTML(
+      String(value)
+    ).replace(
+      /\n/g,
+      "<br>"
+    );
+  }
+
+  function formatArray(value) {
+
+    if (
+      !Array.isArray(value) ||
+      value.length === 0
+    ) {
+      return "غير متوفر";
+    }
+
+    return value
+      .map(item =>
+        escapeHTML(item)
+      )
+      .join("، ");
+  }
+
+  function firstValue(value) {
+
+    if (Array.isArray(value)) {
+      return value[0] || "";
+    }
+
+    return value || "";
+  }
+
+  // ==============================
+  // حماية HTML
+  // ==============================
 
   function escapeHTML(value) {
 
     if (
-      value === null ||
-      value === undefined
+      value === undefined ||
+      value === null
     ) {
-
       return "";
-
     }
 
-
     return String(value)
-
       .replace(
         /&/g,
         "&amp;"
       )
-
       .replace(
         /</g,
         "&lt;"
       )
-
       .replace(
         />/g,
         "&gt;"
       )
-
       .replace(
         /"/g,
         "&quot;"
       )
-
       .replace(
         /'/g,
         "&#039;"
       );
+  }
 
+  // ==============================
+  // حماية JavaScript داخل onclick
+  // ==============================
+
+  function escapeJS(value) {
+
+    return String(value || "")
+      .replace(
+        /\\/g,
+        "\\\\"
+      )
+      .replace(
+        /'/g,
+        "\\'"
+      )
+      .replace(
+        /"/g,
+        '\\"'
+      )
+      .replace(
+        /\n/g,
+        "\\n"
+      )
+      .replace(
+        /\r/g,
+        "\\r"
+      );
   }
 
 });
