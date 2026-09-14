@@ -1,0 +1,72 @@
+[
+  {
+    "id": "med-001",
+    "name": "Paracetamol",
+    "arabicName": "باراسيتامول",
+    "category": "الأدوية",
+    "subCategory": "مسكنات وخافضات حرارة",
+    "type": "medicine",
+    "prescriptionRequired": false,
+    "strength": "500 mg",
+    "dosageForm": "Tablet",
+    "manufacturer": "",
+    "tradeNames": [],
+    "active": true
+  },
+  {
+    "id": "med-002",
+    "name": "Amlodipine",
+    "arabicName": "أملوديبين",
+    "category": "الأدوية",
+    "subCategory": "أدوية ضغط الدم",
+    "type": "medicine",
+    "prescriptionRequired": true,
+    "strength": "5 mg",
+    "dosageForm": "Tablet",
+    "manufacturer": "",
+    "tradeNames": [],
+    "active": true
+  },
+  {
+    "id": "med-003",
+    "name": "Omeprazole",
+    "arabicName": "أوميبرازول",
+    "category": "الأدوية",
+    "subCategory": "أدوية الجهاز الهضمي",
+    "type": "medicine",
+    "prescriptionRequired": false,
+    "strength": "20 mg",
+    "dosageForm": "Capsule",
+    "manufacturer": "",
+    "tradeNames": [],
+    "active": true
+  },
+  {
+    "id": "med-004",
+    "name": "Amoxicillin",
+    "arabicName": "أموكسيسيلين",
+    "category": "الأدوية",
+    "subCategory": "المضادات الحيوية",
+    "type": "medicine",
+    "prescriptionRequired": true,
+    "strength": "500 mg",
+    "dosageForm": "Capsule",
+    "manufacturer": "",
+    "tradeNames": [],
+    "active": true
+  },
+  {
+    "id": "med-005",
+    "name": "Ibuprofen",
+    "arabicName": "إيبوبروفين",
+    "category": "الأدوية",
+    "subCategory": "مسكنات ومضادات التهاب",
+    "type": "medicine",
+    "prescriptionRequired": false,
+    "strength": "400 mg",
+    "dosageForm": "Tablet",
+    "manufacturer": "",
+    "tradeNames": [],
+    "active": true
+  }
+]
