@@ -5,8 +5,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const results = document.getElementById("results");
 
   let localMedicines = [];
-  let medicines = [];
-
+let products = [];
+let medicines = [];
   /*
    * ============================
    * LOAD MEDNEX DATABASE
@@ -15,32 +15,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function loadLocalDatabase() {
 
-    try {
+  try {
 
-      const response =
-        await fetch("data/cardiovascular.json");
+    const [medicineResponse, productsResponse] =
+      await Promise.all([
+        fetch("data/cardiovascular.json"),
+        fetch("data/products.json")
+      ]);
 
-      if (!response.ok) {
-        throw new Error("Database loading error");
-      }
-
-      localMedicines =
-        await response.json();
-
-      console.log(
-        "MEDNEX database loaded:",
-        localMedicines.length
-      );
-
-    } catch (error) {
-
-      console.error(
-        "MEDNEX database error:",
-        error
-      );
-
-      localMedicines = [];
+    if (!medicineResponse.ok) {
+      throw new Error("Cardiovascular database loading error");
     }
+
+    if (!productsResponse.ok) {
+      throw new Error("Products database loading error");
+    }
+
+    localMedicines =
+      await medicineResponse.json();
+
+    products =
+      await productsResponse.json();
+
+    console.log(
+      "MEDNEX medical database loaded:",
+      localMedicines.length
+    );
+
+    console.log(
+      "MEDNEX products database loaded:",
+      products.length
+    );
+
+  } catch (error) {
+
+    console.error(
+      "MEDNEX database error:",
+      error
+    );
+
+    localMedicines = [];
+    products = [];
+  }
   }
 
 
