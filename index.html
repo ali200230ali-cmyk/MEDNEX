@@ -4,239 +4,358 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>MEDNEX | Smart Medicine Guide</title>
+  <title>MEDNEX | توصيل الأدوية والصيدليات</title>
 
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: Arial, sans-serif;
     }
 
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f8fb;
-      color: #17324d;
-      min-height: 100vh;
+      background: #f5f8fa;
+      color: #173042;
+      padding-bottom: 80px;
     }
 
     header {
-      background: white;
-      padding: 20px;
-      text-align: center;
-      border-bottom: 1px solid #e2eaf0;
+      background: #0b7285;
+      color: white;
+      padding: 18px 16px;
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 100;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+    }
+
+    .header-inner {
+      max-width: 900px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .logo {
-      font-size: 30px;
-      font-weight: 800;
-      letter-spacing: 2px;
+      font-size: 25px;
+      font-weight: bold;
+      letter-spacing: 1px;
     }
 
-    .tagline {
-      margin-top: 5px;
-      color: #6b7f90;
-      font-size: 14px;
+    .location {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    main {
+      max-width: 900px;
+      margin: auto;
+      padding: 18px 14px;
     }
 
     .hero {
-      padding: 35px 18px 25px;
-      text-align: center;
+      background: linear-gradient(135deg, #0b7285, #1098ad);
+      color: white;
+      padding: 25px 20px;
+      border-radius: 20px;
+      margin-bottom: 20px;
     }
 
     .hero h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
+      font-size: 25px;
+      margin-bottom: 8px;
     }
 
     .hero p {
-      color: #66798a;
-      max-width: 600px;
-      margin: auto;
-      line-height: 1.7;
+      font-size: 14px;
+      opacity: 0.95;
+      margin-bottom: 18px;
     }
 
     .search-box {
-      max-width: 650px;
-      margin: 25px auto;
       display: flex;
-      gap: 8px;
+      background: white;
+      border-radius: 13px;
+      overflow: hidden;
     }
 
     .search-box input {
       flex: 1;
-      padding: 15px;
-      border: 1px solid #d7e2ea;
-      border-radius: 12px;
-      font-size: 16px;
+      border: none;
+      padding: 14px;
+      font-size: 15px;
       outline: none;
-      background: white;
+      direction: rtl;
     }
 
     .search-box button {
-      border: none;
-      border-radius: 12px;
-      padding: 0 22px;
-      background: #1677ff;
+      background: #083f49;
       color: white;
-      font-size: 16px;
+      border: none;
+      padding: 0 18px;
       cursor: pointer;
+      font-size: 14px;
     }
 
-    .search-box button:hover {
-      opacity: 0.9;
+    .section {
+      margin-top: 24px;
     }
 
-    .sections {
-      max-width: 900px;
-      margin: 10px auto 30px;
-      padding: 0 15px;
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title h2 {
+      font-size: 19px;
+    }
+
+    .section-title span {
+      color: #0b7285;
+      font-size: 13px;
+    }
+
+    .categories {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
     }
 
-    .section-card {
+    .category {
       background: white;
-      border: 1px solid #e3ebf1;
-      border-radius: 18px;
-      padding: 22px 16px;
+      border-radius: 15px;
+      padding: 15px 7px;
       text-align: center;
+      border: 1px solid #e4ecef;
       cursor: pointer;
       transition: 0.2s;
     }
 
-    .section-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(30, 70, 100, 0.08);
+    .category:hover {
+      transform: translateY(-2px);
+      border-color: #0b7285;
     }
 
-    .section-icon {
-      font-size: 32px;
-      margin-bottom: 10px;
+    .category-icon {
+      font-size: 27px;
+      margin-bottom: 8px;
     }
 
-    .section-card h3 {
-      font-size: 17px;
-      margin-bottom: 6px;
-    }
-
-    .section-card p {
-      font-size: 13px;
-      color: #718493;
-    }
-
-    #results {
-      max-width: 900px;
-      margin: auto;
-      padding: 0 15px 40px;
-    }
-
-    .medicine-card {
-      background: white;
-      border: 1px solid #e1e9ef;
-      border-radius: 18px;
-      padding: 22px;
-      margin-bottom: 18px;
-      box-shadow: 0 5px 20px rgba(30, 70, 100, 0.05);
-    }
-
-    .medicine-card h2,
-    .medicine-card h3 {
-      margin-bottom: 12px;
-    }
-
-    .medicine-card p {
-      line-height: 1.8;
-      margin-bottom: 10px;
-      color: #43596a;
-    }
-
-    .medicine-card button {
-      margin-top: 10px;
-      padding: 11px 18px;
-      border: none;
-      border-radius: 10px;
-      background: #1677ff;
-      color: white;
-      cursor: pointer;
-    }
-
-    .medicine-card hr {
-      border: none;
-      border-top: 1px solid #e6edf2;
-      margin: 20px 0;
-    }
-
-    .source-box {
-      margin-top: 20px;
-      padding: 16px;
-      background: #f1f7fb;
-      border-radius: 12px;
-      font-size: 14px;
-    }
-
-    .research-card {
-      background: #fafcfe;
-      border: 1px solid #e0e9ef;
-      border-radius: 14px;
-      padding: 16px;
-      margin-top: 14px;
-    }
-
-    .research-card h4 {
-      margin-bottom: 10px;
-      line-height: 1.6;
-    }
-
-    .research-card p {
-      font-size: 14px;
-    }
-
-    .research-card a {
-      display: inline-block;
-      margin-top: 8px;
-      color: #1677ff;
-      text-decoration: none;
+    .category-name {
+      font-size: 12px;
       font-weight: bold;
     }
 
-    .loading {
-      text-align: center;
-      padding: 30px;
-      color: #66798a;
-    }
-
-    footer {
-      text-align: center;
-      padding: 25px 15px;
+    .prescription {
       background: white;
-      border-top: 1px solid #e3ebf1;
-      color: #718493;
-      font-size: 13px;
-      line-height: 1.8;
+      border: 2px dashed #0b7285;
+      border-radius: 17px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
     }
 
-    @media (min-width: 700px) {
-      .sections {
-        grid-template-columns: repeat(3, 1fr);
-      }
+    .prescription-icon {
+      font-size: 35px;
+      margin-bottom: 8px;
+    }
 
-      .hero h1 {
-        font-size: 36px;
-      }
+    .prescription h3 {
+      color: #0b7285;
+      margin-bottom: 6px;
+    }
+
+    .prescription p {
+      font-size: 12px;
+      color: #667;
+    }
+
+    #prescriptionFile {
+      display: none;
+    }
+
+    .pharmacies {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .pharmacy {
+      min-width: 220px;
+      background: white;
+      border-radius: 16px;
+      padding: 15px;
+      border: 1px solid #e4ecef;
+    }
+
+    .pharmacy-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .pharmacy-logo {
+      width: 45px;
+      height: 45px;
+      border-radius: 12px;
+      background: #e5f6f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
+    }
+
+    .pharmacy h3 {
+      font-size: 15px;
+    }
+
+    .pharmacy p {
+      font-size: 11px;
+      color: #68777d;
+      margin-top: 4px;
+    }
+
+    .rating {
+      color: #e6a700;
+      font-size: 12px;
+    }
+
+    .pharmacy button {
+      width: 100%;
+      border: none;
+      background: #0b7285;
+      color: white;
+      padding: 9px;
+      border-radius: 9px;
+      margin-top: 12px;
+      cursor: pointer;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .product {
+      background: white;
+      border-radius: 16px;
+      padding: 14px;
+      border: 1px solid #e4ecef;
+    }
+
+    .product-image {
+      height: 90px;
+      background: #eef7f8;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .product h3 {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .product p {
+      color: #718087;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .price {
+      font-weight: bold;
+      color: #0b7285;
+      margin-bottom: 10px;
+    }
+
+    .product button {
+      width: 100%;
+      border: none;
+      background: #0b7285;
+      color: white;
+      padding: 10px;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+
+    #results {
+      margin-top: 15px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      background: white;
+      height: 65px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid #ddd;
+      z-index: 200;
+    }
+
+    .nav-item {
+      text-align: center;
+      font-size: 11px;
+      color: #607078;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: #0b7285;
+      font-weight: bold;
+    }
+
+    .nav-icon {
+      font-size: 22px;
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .cart-badge {
+      position: absolute;
+      background: #e63946;
+      color: white;
+      font-size: 9px;
+      padding: 3px 6px;
+      border-radius: 20px;
+      margin-right: -10px;
+      margin-top: -5px;
+    }
+
+    .message {
+      background: #e8f7f8;
+      color: #0b5966;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-size: 13px;
+      display: none;
     }
 
     @media (max-width: 500px) {
-      .search-box {
-        flex-direction: column;
+      .categories {
+        grid-template-columns: repeat(4, 1fr);
       }
 
-      .search-box button {
-        padding: 13px;
+      .category-name {
+        font-size: 10px;
+      }
+
+      .products {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
@@ -244,92 +363,348 @@
 
 <body>
 
-  <header>
-    <div class="logo">MEDNEX</div>
-    <div class="tagline">Your Smart Medicine Guide</div>
-  </header>
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="logo">MEDNEX</div>
+      <div class="location">📍 اختر موقعك</div>
+    </div>
 
-  <main>
+    <div style="font-size:24px;">🛒</div>
+  </div>
+</header>
 
-    <section class="hero">
-      <h1>دليلك الذكي للأدوية</h1>
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>شنو تحتاج اليوم؟</h1>
+    <p>دواء، مستلزم طبي أو منتج صحي؟ ابحث عنه أو اطلبه من أقرب صيدلية.</p>
+
+    <div class="search-box">
+      <input
+        type="text"
+        id="medicineSearch"
+        placeholder="ابحث عن دواء، منتج أو صيدلية..."
+      >
+
+      <button id="searchButton">بحث</button>
+    </div>
+
+    <div id="results"></div>
+  </section>
+
+
+  <!-- CATEGORIES -->
+  <section class="section">
+
+    <div class="section-title">
+      <h2>الأقسام</h2>
+      <span>عرض الكل</span>
+    </div>
+
+    <div class="categories">
+
+      <div class="category">
+        <div class="category-icon">💊</div>
+        <div class="category-name">الأدوية</div>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">🧴</div>
+        <div class="category-name">العناية بالبشرة</div>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">👶</div>
+        <div class="category-name">الأطفال والأمومة</div>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">🩹</div>
+        <div class="category-name">مستلزمات طبية</div>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">💊</div>
+        <div class="category-name">فيتامينات</div>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">🧼</div>
+        <div class="category-name">العناية الشخصية</div>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">🩺</div>
+        <div class="category-name">أجهزة طبية</div>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">🏪</div>
+        <div class="category-name">الصيدليات</div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- PRESCRIPTION -->
+  <section class="section">
+
+    <label class="prescription" for="prescriptionFile">
+
+      <div class="prescription-icon">📷</div>
+
+      <h3>صوّر وصفتك الطبية</h3>
+
       <p>
-        معلومات دوائية موثوقة، أبحاث علمية، تحذيرات،
-        جرعات وتداخلات دوائية في مكان واحد.
+        ارفع صورة الوصفة وسنجهزها لك من الصيدليات المتاحة.
       </p>
 
-      <div class="search-box">
-        <input
-          id="medicineSearch"
-          type="text"
-          placeholder="ابحث عن اسم الدواء..."
-        >
+    </label>
 
-        <button id="searchButton">
-          بحث 🔎
+    <input
+      type="file"
+      id="prescriptionFile"
+      accept="image/*"
+    >
+
+    <div id="fileMessage" class="message"></div>
+
+  </section>
+
+
+  <!-- PHARMACIES -->
+  <section class="section">
+
+    <div class="section-title">
+      <h2>صيدليات قريبة</h2>
+      <span>عرض الكل</span>
+    </div>
+
+    <div class="pharmacies">
+
+      <div class="pharmacy">
+
+        <div class="pharmacy-top">
+
+          <div class="pharmacy-logo">🏪</div>
+
+          <div>
+            <h3>صيدلية MEDNEX</h3>
+            <p>قريبة منك</p>
+          </div>
+
+        </div>
+
+        <div class="rating">⭐ 4.8</div>
+
+        <button onclick="alert('صفحة الصيدلية ستُفعّل في الخطوة القادمة')">
+          عرض الصيدلية
         </button>
-      </div>
-    </section>
 
-    <section class="sections">
-
-      <div class="section-card">
-        <div class="section-icon">💊</div>
-        <h3>الأدوية</h3>
-        <p>معلومات الدواء والمادة الفعالة</p>
       </div>
 
-      <div class="section-card">
-        <div class="section-icon">🔬</div>
-        <h3>الأبحاث</h3>
-        <p>أحدث الدراسات العلمية</p>
+
+      <div class="pharmacy">
+
+        <div class="pharmacy-top">
+
+          <div class="pharmacy-logo">💊</div>
+
+          <div>
+            <h3>صيدلية الشفاء</h3>
+            <p>متاحة للتوصيل</p>
+          </div>
+
+        </div>
+
+        <div class="rating">⭐ 4.7</div>
+
+        <button onclick="alert('صفحة الصيدلية ستُفعّل في الخطوة القادمة')">
+          عرض الصيدلية
+        </button>
+
       </div>
 
-      <div class="section-card">
-        <div class="section-icon">⚠️</div>
-        <h3>التحذيرات</h3>
-        <p>التحذيرات وموانع الاستعمال</p>
+    </div>
+
+  </section>
+
+
+  <!-- PRODUCTS -->
+  <section class="section">
+
+    <div class="section-title">
+      <h2>منتجات مقترحة</h2>
+      <span>عرض الكل</span>
+    </div>
+
+    <div class="products">
+
+      <div class="product">
+
+        <div class="product-image">💊</div>
+
+        <h3>Paracetamol</h3>
+
+        <p>مسكن وخافض للحرارة</p>
+
+        <div class="price">السعر حسب الصيدلية</div>
+
+        <button onclick="addToCart('Paracetamol')">
+          🛒 أضف للسلة
+        </button>
+
       </div>
 
-      <div class="section-card">
-        <div class="section-icon">🔄</div>
-        <h3>التداخلات</h3>
-        <p>التداخلات الدوائية</p>
+
+      <div class="product">
+
+        <div class="product-image">💊</div>
+
+        <h3>Amlodipine</h3>
+
+        <p>دواء لضغط الدم</p>
+
+        <div class="price">السعر حسب الصيدلية</div>
+
+        <button onclick="addToCart('Amlodipine')">
+          🛒 أضف للسلة
+        </button>
+
       </div>
 
-      <div class="section-card">
-        <div class="section-icon">📋</div>
-        <h3>الجرعات</h3>
-        <p>معلومات الجرعة وطريقة الاستخدام</p>
+
+      <div class="product">
+
+        <div class="product-image">🩺</div>
+
+        <h3>جهاز قياس الضغط</h3>
+
+        <p>أجهزة قياس منزلية</p>
+
+        <div class="price">متوفر لاحقاً</div>
+
+        <button onclick="alert('سيتم ربط المنتجات الحقيقية لاحقاً')">
+          عرض المنتج
+        </button>
+
       </div>
 
-      <div class="section-card">
-        <div class="section-icon">🧠</div>
-        <h3>AI Assistant</h3>
-        <p>مساعد ذكي للمعلومات الصحية</p>
+
+      <div class="product">
+
+        <div class="product-image">🧴</div>
+
+        <h3>منتجات العناية</h3>
+
+        <p>عناية بالبشرة والشعر</p>
+
+        <div class="price">حسب الصيدلية</div>
+
+        <button onclick="alert('سيتم ربط المنتجات الحقيقية لاحقاً')">
+          عرض المنتجات
+        </button>
+
       </div>
 
-    </section>
+    </div>
 
-    <section id="results"></section>
+  </section>
 
-  </main>
+</main>
 
-  <footer>
-    <p>
-      MEDNEX — Smart Medicine & Health Platform
-    </p>
 
-    <p>
-      المعلومات للتثقيف الصحي ولا تغني عن استشارة الطبيب أو الصيدلي.
-    </p>
+<!-- BOTTOM NAVIGATION -->
 
-    <p>
-      المصادر: U.S. FDA / openFDA / PubMed
-    </p>
-  </footer>
+<nav class="bottom-nav">
 
-  <script src="app.js?v=3"></script>
+  <div class="nav-item active">
+    <span class="nav-icon">🏠</span>
+    الرئيسية
+  </div>
+
+  <div class="nav-item">
+    <span class="nav-icon">🔍</span>
+    البحث
+  </div>
+
+  <div class="nav-item">
+    <span class="nav-icon">🏪</span>
+    الصيدليات
+  </div>
+
+  <div class="nav-item">
+    <span class="nav-icon">📦</span>
+    طلباتي
+  </div>
+
+  <div class="nav-item" onclick="showCart()">
+    <span class="nav-icon">
+      🛒
+      <span id="cartCount" class="cart-badge">0</span>
+    </span>
+    السلة
+  </div>
+
+</nav>
+
+
+<script>
+
+  let cart = [];
+
+  function addToCart(product) {
+
+    cart.push(product);
+
+    document.getElementById("cartCount").textContent = cart.length;
+
+    alert(product + " تمت إضافته إلى السلة");
+  }
+
+
+  function showCart() {
+
+    if (cart.length === 0) {
+
+      alert("السلة فارغة حالياً");
+
+      return;
+    }
+
+    alert(
+      "السلة:\n\n" +
+      cart.map((item, index) => (index + 1) + ". " + item).join("\n")
+    );
+  }
+
+
+  document
+    .getElementById("prescriptionFile")
+    .addEventListener("change", function () {
+
+      const file = this.files[0];
+
+      if (!file) return;
+
+      const message = document.getElementById("fileMessage");
+
+      message.style.display = "block";
+
+      message.textContent =
+        "✅ تم اختيار الوصفة: " + file.name +
+        " — سيتم ربطها بالصيدليات في المرحلة القادمة.";
+
+    });
+
+</script>
+
+
+<script src="app.js?v=4"></script>
 
 </body>
 </html>
