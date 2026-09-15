@@ -655,51 +655,6 @@
 
 <script>
 
-  let cart = [];
-
-  function addToCart(product) {
-
-    cart.push(product);
-
-    document.getElementById("cartCount").textContent = cart.length;
-
-    alert(product + " تمت إضافته إلى السلة");
-  }
-
-
-  function showCart() {
-
-    if (cart.length === 0) {
-
-      alert("السلة فارغة حالياً");
-
-      return;
-    }
-
-    alert(
-      "السلة:\n\n" +
-      cart.map((item, index) => (index + 1) + ". " + item).join("\n")
-    );
-  }
-
-
-  document
-    .getElementById("prescriptionFile")
-    .addEventListener("change", function () {
-
-      const file = this.files[0];
-
-      if (!file) return;
-
-      const message = document.getElementById("fileMessage");
-
-      message.style.display = "block";
-
-      message.textContent =
-        "✅ تم اختيار الوصفة: " + file.name +
-        " — سيتم ربطها بالصيدليات في المرحلة القادمة.";
-
-    });
 
 </script>
 
